@@ -62,7 +62,7 @@ class VehicleSearch(tk.Frame):
         self.treeview.column("notes", anchor=tk.W)
 
         self.treeview.heading("id", text="ID")
-        self.treeview.heading("customer_id", text="Customer ID")
+        self.treeview.heading("customer_id", text="Customer")
         self.treeview.heading("year", text="Year")
         self.treeview.heading("make", text="Make")
         self.treeview.heading("model", text="Model")
@@ -137,7 +137,7 @@ class EditVehicle(tk.Frame):
             self.parent.config(menu=self.menu_bar)
 
         # Customer ID
-        self.customer_id_label = tk.Label(self, text="Customer ID:")
+        self.customer_id_label = tk.Label(self, text="Customer:")
         self.customer_id_label.grid(row=0, column=0, sticky="e")
         self.customer_id_var = tk.StringVar()
         #self.customer_id_entry = tk.Entry(self, textvariable=self.customer_id_var)
@@ -218,7 +218,7 @@ class EditVehicle(tk.Frame):
     def has_changed(self):
         if (
             #self.entry.customer_id != self.customer_id_var.get()
-            self.entry.year != self.year_var.get()
+            str(self.entry.year) != self.year_var.get()
             or self.entry.make != self.make_var.get()
             or self.entry.model != self.model_var.get()
             or self.entry.vin != self.vin_var.get()

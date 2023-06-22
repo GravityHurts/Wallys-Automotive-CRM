@@ -231,7 +231,7 @@ class EditCustomer(tk.Frame):
             result = messagebox.askyesno("Discard Changes", "You have unsaved changes. YES = Close without saving")
 
             if result:
-                self.entry.delete()
+                #self.entry.delete()
                 self.close()
             else:
                 # User cancelled deletion
