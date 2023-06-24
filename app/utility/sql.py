@@ -69,7 +69,7 @@ class SQLConnection:
         if ''.join([str(id), firstname, lastname, email, phone, address, notes]).strip() == '':
             return
         
-        if id == '': 
+        if id is None or id == '': 
             self.insert_customer(firstname, lastname, email, phone, address, notes)
             return 
         
@@ -130,18 +130,25 @@ class SQLConnection:
         if ''.join([str(id), str(customer_id), str(year), make, model, vin, notes]).strip() == '':
             return
         
-        if id == '':
+        if id is None or id == '':
             self.insert_vehicle(customer_id, year, make, model, vin, notes)
             return 
         
-        if (customer_id == ''):
+        if (customer_id is None or customer_id == ''):
             customer_id = 'NULL'
+
+        if vin is not None and vin != '':
+            vin = vin.upper()
+
         self.cursor.execute("UPDATE vehicles SET customer_id = ?, year = ?, make = ?, model = ?, vin = ?, notes = ? WHERE id = ?", (customer_id, year, make, model, vin, notes, id))
         self.conn.commit()
 
     def insert_vehicle(self, customer_id="", year="", make="", model="", vin="", notes=""):
-        if (customer_id == ''):
+        if (customer_id is None or customer_id == ''):
             customer_id = 'NULL'
+
+        if vin is not None and vin != '':
+            vin = vin.upper()
 
         ret = self.cursor.execute("INSERT INTO vehicles (customer_id, year, make, model, vin, notes) VALUES (?, ?, ?, ?, ?, ?)", (customer_id, year, make, model, vin, notes))
         self.conn.commit()
@@ -179,7 +186,6 @@ class SQLConnection:
         
         self.cursor.execute(statement)
         values = self.cursor.fetchall()
-        print(values)
         vehicles = [Vehicle(*value) for value in values]
         
         return vehicles
@@ -195,17 +201,22 @@ class SQLConnection:
         self.conn.commit()
 
     def update_job(self, id="", vehicle_id="", description="", notes="", cost="", mileage_in="", mileage_out=""):
-        if ''.join([str(id), str(vehicle_id), description, notes, cost, str(mileage_in), str(mileage_out)]).strip() == '':
+        if ''.join([str(id), str(vehicle_id), description, notes, str(cost), str(mileage_in), str(mileage_out)]).strip() == '':
             return
 
-        if id == '':
+        if id is None or id == '':
             self.insert_job(vehicle_id, description, notes, cost, mileage_in, mileage_out)
             return
 
+        if vehicle_id is None or vehicle_id == '':
+            vehicle_id = 'NULL'
         self.cursor.execute("UPDATE jobs SET vehicle_id = ?, description = ?, notes = ?, cost = ?, mileage_in = ?, mileage_out = ? WHERE id = ?", (vehicle_id, description, notes, cost, mileage_in, mileage_out, id))
         self.conn.commit()
 
     def insert_job(self, vehicle_id="", description="", notes="", cost="", mileage_in="", mileage_out=""):
+        if vehicle_id is None or vehicle_id == '':
+            vehicle_id = 'NULL'
+
         self.cursor.execute("INSERT INTO jobs (vehicle_id, description, notes, cost, mileage_in, mileage_out) VALUES (?, ?, ?, ?, ?, ?)", (vehicle_id, description, notes, cost, mileage_in, mileage_out))
         self.conn.commit()
 
@@ -217,13 +228,17 @@ class SQLConnection:
             search = f'''
             WHERE 
             description LIKE '%{text}%' OR
-            notes LIKE '%{text}%' OR
+            jobs.notes LIKE '%{text}%' OR
             cost LIKE '%{text}%' OR
             mileage_in LIKE '%{text}%' OR
-            mileage_out LIKE '%{text}%' 
+            mileage_out LIKE '%{text}%' OR
+            vehicles.year LIKE '%{text}%' OR 
+            vehicles.make LIKE '%{text}%' OR 
+            vehicles.model LIKE '%{text}%'
             '''
 
-        statement = f"SELECT * FROM jobs {search} LIMIT {offset},{page_size}"
+        #statement = f"SELECT * FROM jobs {search} LIMIT {offset},{page_size}"
+        statement = f"SELECT jobs.*, vehicles.year, vehicles.make, vehicles.model FROM jobs LEFT JOIN vehicles ON vehicles.id = jobs.vehicle_id {search} LIMIT {offset},{page_size}"
 
         self.cursor.execute(statement)
         values = self.cursor.fetchall()

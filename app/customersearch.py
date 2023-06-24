@@ -3,6 +3,7 @@ from .utility.functions import debounce
 from .utility.sql import SQLConnection
 
 from .utility.types import Customer
+from .utility.types import COLUMN_INITIAL_WIDTH
 from .textwithvar import TextWithVar
 
 import tkinter as tk
@@ -52,12 +53,12 @@ class CustomerSearch(tk.Frame):
 
         self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
         self.treeview.column("id", width=0, stretch=tk.NO) # hide the internal ID
-        self.treeview.column("firstname", anchor=tk.W)
-        self.treeview.column("lastname", anchor=tk.W)
-        self.treeview.column("email", anchor=tk.W)
-        self.treeview.column("phone", anchor=tk.W)
-        self.treeview.column("address", anchor=tk.W)
-        self.treeview.column("notes", anchor=tk.W)
+        self.treeview.column("firstname", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("lastname", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("email", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("phone", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("address", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("notes", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
 
         self.treeview.heading("id", text="ID")
         self.treeview.heading("firstname", text="First Name")

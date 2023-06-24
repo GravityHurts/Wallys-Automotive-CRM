@@ -20,6 +20,7 @@ class AutocompleteEntry(Entry):
 
     def changed(self, name, index, mode):
         self.selected = None
+        self.config(bg='white')
         if self.var.get() == '':
             if hasattr(self, 'lb'):
                 self.lb.destroy()
@@ -33,7 +34,7 @@ class AutocompleteEntry(Entry):
                     self.lb.bind("<Double-Button-1>", self.selection)
                     self.lb.bind("<Right>", self.selection)
 
-                    self.lb.place(x=self.winfo_x(), y=self.winfo_y()+self.winfo_height())
+                    self.lb.place(x=self.winfo_x(), y=self.winfo_y()+self.winfo_height(), width=250)
 
                     self.lb_up = True
                 
@@ -52,6 +53,7 @@ class AutocompleteEntry(Entry):
             selected = self.lista[selected]
             self.var.set(selected)
             self.selected = selected
+            self.config(bg='lightgreen')
             self.lb.destroy()
             self.lb_up = False
             self.icursor(END)

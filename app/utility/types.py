@@ -1,5 +1,7 @@
 from . import sql
 
+COLUMN_INITIAL_WIDTH = 10
+
 class Customer:
     def __init__(self, id='', firstname='', lastname='', email='', phone='', address='', notes='', **kwargs):
         self.id        = kwargs.get('id',        id)
@@ -55,7 +57,8 @@ class Vehicle:
         if (self.firstname+self.lastname == ''):
             self.id_string = "No Customer"
         else:
-            self.id_string    = f"ID: {self.customer_id} - {firstname} {lastname}"
+            #self.id_string    = f"ID: {self.customer_id} - {firstname} {lastname}"
+            self.id_string    = f"{self.firstname} {self.lastname}"
 
         self.year         = kwargs.get('year', year)
         self.make         = kwargs.get('make', make)
@@ -63,6 +66,9 @@ class Vehicle:
         self.vin          = kwargs.get('vin', vin)
         self.notes        = kwargs.get('notes', notes)
         self.sql = sql.SQLConnection()
+        
+    def __str__(self):
+        return f'{self.year} {self.make} {self.model} {self.vin}'
 
     def save(self):
         self.sql.update_vehicle(
@@ -92,9 +98,20 @@ class Vehicle:
         )
 
 class Job:
-    def __init__(self, id='', vehicle_id='', description='', notes='', cost='', mileage_in='', mileage_out='', **kwargs):
+    def __init__(self, id='', vehicle_id='', description='', notes='', cost='', mileage_in='', mileage_out='', year='', make='', model='', **kwargs):
         self.id             = kwargs.get('id', id)
         self.vehicle_id     = kwargs.get('vehicle_id', vehicle_id)
+        if self.vehicle_id == 'NULL':
+            self.vehicle_id = ''
+
+        self.year           = kwargs.get('year', year) or ''
+        self.make           = kwargs.get('make', make) or ''
+        self.model          = kwargs.get('model', model) or ''
+        if ((str(self.year)+str(self.make)+str(self.model)) == ''):
+            self.id_string = "No Vehicle??"
+        else:
+            self.id_string    = f"{self.year} {self.make} {self.model}"
+            
         self.description    = kwargs.get('description', description)
         self.notes          = kwargs.get('notes', notes)
         self.cost           = kwargs.get('cost', cost)
@@ -120,7 +137,8 @@ class Job:
     def to_tuple(self):
         return (
             self.id,
-            self.vehicle_id,
+            #self.vehicle_id,
+            self.id_string,
             self.description,
             self.notes,
             self.cost,

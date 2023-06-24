@@ -15,7 +15,7 @@ class Toolbar(tk.Frame):
         # Add an Exit option to the File menu
         file_menu.add_command(label="Exit", command=self.close_app)
 
-        self.parent.config(menu=menu_bar)
+        self.parent.parent.config(menu=menu_bar)
 
     def close_app(self):
         self.parent.destroy()
