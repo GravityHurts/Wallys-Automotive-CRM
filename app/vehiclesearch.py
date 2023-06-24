@@ -2,6 +2,7 @@
 from .utility.sql import SQLConnection
 
 from .utility.types import Vehicle
+from .utility.types import COLUMN_INITIAL_WIDTH
 from .textwithvar import TextWithVar
 from .autocompleteentry import AutocompleteEntry
 
@@ -54,12 +55,12 @@ class VehicleSearch(tk.Frame):
 
         self.treeview.column("#0", width=0, stretch=tk.NO)
         self.treeview.column("id", width=0, stretch=tk.NO)
-        self.treeview.column("customer_id", anchor=tk.W)
-        self.treeview.column("year", anchor=tk.W)
-        self.treeview.column("make", anchor=tk.W)
-        self.treeview.column("model", anchor=tk.W)
-        self.treeview.column("vin", anchor=tk.W)
-        self.treeview.column("notes", anchor=tk.W)
+        self.treeview.column("customer_id", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("year", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("make", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("model", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("vin", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("notes", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
 
         self.treeview.heading("id", text="ID")
         self.treeview.heading("customer_id", text="Customer")
@@ -215,10 +216,17 @@ class EditVehicle(tk.Frame):
 
         self.close_window(force=True)
 
+    def cx_id_changed(self):
+        if hasattr(self, 'customer_link'):
+            return self.customer_link.__str__() != self.customer_id_var.get()
+        else:
+            return self.customer_id_var.get() != ''
+
     def has_changed(self):
         if (
             #self.entry.customer_id != self.customer_id_var.get()
-            str(self.entry.year) != self.year_var.get()
+            self.cx_id_changed()
+            or str(self.entry.year) != self.year_var.get()
             or self.entry.make != self.make_var.get()
             or self.entry.model != self.model_var.get()
             or self.entry.vin != self.vin_var.get()
@@ -264,6 +272,7 @@ class EditVehicle(tk.Frame):
                 link = link[0]
                 self.customer_id_var.set(link.__str__())
                 self.customer_id_entry.selected = link
+                self.customer_link = link
 
         self.year_var.set(self.entry.year)
         self.make_var.set(self.entry.make)

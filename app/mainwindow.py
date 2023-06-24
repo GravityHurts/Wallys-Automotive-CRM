@@ -13,23 +13,24 @@ class MainWindow(tk.Frame):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
-        self.toolbar = Toolbar(parent)
+        self.toolbar = Toolbar(self)
         self.toolbar.pack(side="top", fill="x")
 
         self.notebook = ttk.Notebook(self)
-        self.notebook.pack(pady=10, expand=True)
+        self.notebook.pack(padx=4, pady=4, expand=True, fill='both')
 
         #Customers tab
         self.customersearch = CustomerSearch(self.notebook)
-        self.customersearch.pack(expand=True)
+        self.customersearch.pack(expand=True, fill='both')
         self.notebook.add(self.customersearch, text="Customers")
 
         #Vehicles tab
         self.vehiclesearch = VehicleSearch(self.notebook)
-        self.vehiclesearch.pack(expand=True)
+        self.vehiclesearch.pack(expand=True, fill='both')
         self.notebook.add(self.vehiclesearch, text="Vehicles")
 
         #Jobs tab
         self.jobsearch = JobSearch(self.notebook)
-        self.jobsearch.pack(expand=True)
+        self.jobsearch.pack(expand=True, fill='both')
         self.notebook.add(self.jobsearch, text="Jobs")
+

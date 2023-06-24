@@ -2,7 +2,9 @@
 from .utility.sql import SQLConnection
 
 from .utility.types import Job
+from .utility.types import COLUMN_INITIAL_WIDTH
 from .textwithvar import TextWithVar
+from .autocompleteentry import AutocompleteEntry
 
 import tkinter as tk
 from tkinter import ttk
@@ -52,15 +54,15 @@ class JobSearch(tk.Frame):
 
         self.treeview.column("#0", width=0, stretch=tk.NO)
         self.treeview.column("id", width=0, stretch=tk.NO)
-        self.treeview.column("vehicle_id", anchor=tk.W)
-        self.treeview.column("description", anchor=tk.W)
-        self.treeview.column("notes", anchor=tk.W)
-        self.treeview.column("cost", anchor=tk.W)
-        self.treeview.column("mileage_in", anchor=tk.W)
-        self.treeview.column("mileage_out", anchor=tk.W)
+        self.treeview.column("vehicle_id", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("description", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("notes", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("cost", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("mileage_in", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("mileage_out", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
 
         self.treeview.heading("id", text="ID")
-        self.treeview.heading("vehicle_id", text="Vehicle ID")
+        self.treeview.heading("vehicle_id", text="Vehicle")
         self.treeview.heading("description", text="Description")
         self.treeview.heading("notes", text="Notes")
         self.treeview.heading("cost", text="Cost")
@@ -138,7 +140,8 @@ class EditJob(tk.Frame):
         self.vehicle_id_label = tk.Label(self, text="Vehicle ID:")
         self.vehicle_id_label.grid(row=0, column=0, sticky="e")
         self.vehicle_id_var = tk.StringVar()
-        self.vehicle_id_entry = tk.Entry(self, textvariable=self.vehicle_id_var)
+        #self.vehicle_id_entry = tk.Entry(self, textvariable=self.vehicle_id_var)
+        self.vehicle_id_entry = VehicleIDSuggestEntry(self, textvariable=self.vehicle_id_var)
         self.vehicle_id_entry.grid(row=0, column=1, sticky="ew", columnspan=2)
 
         # Description
@@ -194,7 +197,15 @@ class EditJob(tk.Frame):
             self.vehicle_id_entry.focus()
 
     def save_info(self):
-        self.entry.vehicle_id = self.vehicle_id_var.get()
+        #self.entry.vehicle_id = self.vehicle_id_var.get()
+        self.entry.vehicle_id = ''
+
+        if self.vehicle_id_entry.selected is not None:
+            link = sql.id_vehicle(self.vehicle_id_entry.selected.id)
+            if link is not None and len(link) > 0:
+                link = link[0]
+                self.entry.vehicle_id = link.id
+
         self.entry.description = self.description_var.get()
         self.entry.notes = self.notes_var.get()
         self.entry.cost = self.cost_var.get()
@@ -203,14 +214,21 @@ class EditJob(tk.Frame):
 
         self.entry.save()
 
-        self.close_window()
+        self.close_window(force=True)
 
+    def vx_id_changed(self):
+        if hasattr(self, 'vehicle_link'):
+            return self.vehicle_link.__str__() != self.vehicle_id_var.get()
+        else:
+            return self.vehicle_id_var.get() != ''
+        
     def has_changed(self):
         if (
-            self.entry.vehicle_id != self.vehicle_id_var.get() or
+            #self.entry.vehicle_id != self.vehicle_id_var.get() or
+            self.vx_id_changed() or
             self.entry.description != self.description_var.get() or
             self.entry.notes != self.notes_var.get() or
-            self.entry.cost != self.cost_var.get() or
+            str(self.entry.cost) != self.cost_var.get() or
             self.entry.mileage_in != self.mileage_in_var.get() or
             self.entry.mileage_out != self.mileage_out_var.get()
         ):
@@ -218,8 +236,8 @@ class EditJob(tk.Frame):
         else:
             return False
 
-    def close_window(self):
-        if self.has_changed():
+    def close_window(self, force=False):
+        if self.has_changed() and force == False:
             result = messagebox.askyesno("Discard Changes", "You have unsaved changes. YES = Close without saving")
 
             if result:
@@ -246,6 +264,16 @@ class EditJob(tk.Frame):
 
     def fill_entries(self):
         self.vehicle_id_var.set(self.entry.vehicle_id)
+
+        if self.entry.vehicle_id != '':
+            #update vehicle field if vehicle_id is present
+            link = sql.id_vehicle(self.entry.vehicle_id)
+            if link is not None and len(link) > 0:
+                link = link[0]
+                self.vehicle_id_var.set(link.__str__())
+                self.vehicle_id_entry.selected = link
+                self.vehicle_link = link
+
         self.description_var.set(self.entry.description)
         self.notes_var.set(self.entry.notes)
         self.cost_var.set(self.entry.cost)
@@ -254,3 +282,11 @@ class EditJob(tk.Frame):
         self.notes_entry.update_textvariable()
 
 
+class VehicleIDSuggestEntry(AutocompleteEntry):
+    def __init__(self, *args, **kwargs):
+        super().__init__([], *args, **kwargs)
+
+    def comparison(self): 
+        search_text = self.var.get()
+        return sql.search_vehicles(search_text, 1, 8)
+    
