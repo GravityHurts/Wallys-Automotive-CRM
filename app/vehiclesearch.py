@@ -1,5 +1,5 @@
 
-from .utility.sql import SQLConnection
+from .utility.sql import SQLConnection, FIELD_HEADER_NAMES
 
 from .utility.types import Vehicle
 from .utility.types import COLUMN_INITIAL_WIDTH
@@ -51,24 +51,17 @@ class VehicleSearch(tk.Frame):
         # self.treeview.bind("<<TreeviewSelect>>", self.on_select)
         self.treeview.bind("<Double-1>", self.on_select)
 
-        self.treeview['columns'] = ('id', 'customer_id', 'year', 'make', 'model', 'vin', 'notes')
+        keys = list(sql.get_table_info('vehicles').keys())
+        self.treeview['columns'] = keys
 
-        self.treeview.column("#0", width=0, stretch=tk.NO)
-        self.treeview.column("id", width=0, stretch=tk.NO)
-        self.treeview.column("customer_id", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("year", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("make", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("model", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("vin", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("notes", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+        self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
+        self.treeview.column("id", width=0, stretch=tk.NO) # hide the internal ID
 
-        self.treeview.heading("id", text="ID")
-        self.treeview.heading("customer_id", text="Customer")
-        self.treeview.heading("year", text="Year")
-        self.treeview.heading("make", text="Make")
-        self.treeview.heading("model", text="Model")
-        self.treeview.heading("vin", text="VIN")
-        self.treeview.heading("notes", text="Notes")
+        for key in keys:
+            if key == 'id': 
+                continue
+            self.treeview.column(key, anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+            self.treeview.heading(key, text=FIELD_HEADER_NAMES[key])
 
         self.isLoading = False
         self.load_entries()
@@ -202,8 +195,7 @@ class EditVehicle(tk.Frame):
 
         if self.customer_id_entry.selected is not None:
             link = sql.id_customer(self.customer_id_entry.selected.id)
-            if link is not None and len(link) > 0:
-                link = link[0]
+            if link is not None:
                 self.entry.customer_id = link.id
 
         self.entry.year = self.year_var.get()
@@ -268,8 +260,7 @@ class EditVehicle(tk.Frame):
         if self.entry.customer_id != '':
             #update customer field if customer_id is present
             link = sql.id_customer(self.entry.customer_id)
-            if link is not None and len(link) > 0:
-                link = link[0]
+            if link is not None:
                 self.customer_id_var.set(link.__str__())
                 self.customer_id_entry.selected = link
                 self.customer_link = link

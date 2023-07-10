@@ -1,6 +1,6 @@
 
 from .utility.functions import debounce
-from .utility.sql import SQLConnection
+from .utility.sql import SQLConnection, FIELD_HEADER_NAMES
 
 from .utility.types import Customer
 from .utility.types import COLUMN_INITIAL_WIDTH
@@ -48,26 +48,18 @@ class CustomerSearch(tk.Frame):
         self.treeview.pack(expand=True, fill=tk.BOTH)
         #self.treeview.bind("<<TreeviewSelect>>", self.on_select)
         self.treeview.bind("<Double-1>", self.on_select)
-
-        self.treeview['columns'] = ('id', 'firstname', 'lastname', 'email', 'phone', 'address', 'notes')  # Adjust the column names as per your SQL entries
+        keys = list(sql.get_table_info('customers').keys())
+        self.treeview['columns'] = keys
 
         self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
         self.treeview.column("id", width=0, stretch=tk.NO) # hide the internal ID
-        self.treeview.column("firstname", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("lastname", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("email", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("phone", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("address", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
-        self.treeview.column("notes", anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
 
-        self.treeview.heading("id", text="ID")
-        self.treeview.heading("firstname", text="First Name")
-        self.treeview.heading("lastname", text="Last Name")
-        self.treeview.heading("email", text="E-Mail Address")
-        self.treeview.heading("phone", text="Phone Number")
-        self.treeview.heading("address", text="Street Address")
-        self.treeview.heading("notes", text="Notes")
-        
+        for key in keys:
+            if key == 'id': 
+                continue
+            self.treeview.column(key, anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+            self.treeview.heading(key, text=FIELD_HEADER_NAMES[key])
+
         self.isLoading = False
         self.load_entries()  # Load the initial page of entries
 

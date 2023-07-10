@@ -202,8 +202,7 @@ class EditJob(tk.Frame):
 
         if self.vehicle_id_entry.selected is not None:
             link = sql.id_vehicle(self.vehicle_id_entry.selected.id)
-            if link is not None and len(link) > 0:
-                link = link[0]
+            if link is not None:
                 self.entry.vehicle_id = link.id
 
         self.entry.description = self.description_var.get()
@@ -268,8 +267,7 @@ class EditJob(tk.Frame):
         if self.entry.vehicle_id != '':
             #update vehicle field if vehicle_id is present
             link = sql.id_vehicle(self.entry.vehicle_id)
-            if link is not None and len(link) > 0:
-                link = link[0]
+            if link is not None:
                 self.vehicle_id_var.set(link.__str__())
                 self.vehicle_id_entry.selected = link
                 self.vehicle_link = link
