@@ -10,13 +10,20 @@ class AutocompleteEntry(Entry):
         self.lista = lista        
         self.var = kwargs["textvariable"]
 
-        self.var.trace('w', self.changed)
+        self.traceid = self.var.trace('w', self.changed)
         self.bind("<Right>", self.selection)
         self.bind("<Up>", self.up)
         self.bind("<Down>", self.down)
         
         self.lb_up = False
         self.selected = None
+
+    def set_variable(self, newVal):
+        self.var.trace_remove('write', self.traceid)
+        self.var.set(newVal)
+        self.traceid = self.var.trace('w', self.changed)
+        if self.selected is not None:
+            self.config(bg='lightgreen')
 
     def changed(self, name, index, mode):
         self.selected = None

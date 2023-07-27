@@ -1,15 +1,50 @@
 from . import sql
 
+from .config import DEFAULT_LABOR_HOURLY_RATE
+from .utils import convert_to_property_display
+from datetime import datetime
+
 COLUMN_INITIAL_WIDTH = 10
 
 class DBObject:
+    """
+    Represents a database object with common functionalities for interacting with database tables.
+
+    Parameters:
+    table_name (str): The name of the database table associated with the object.
+    **kwargs: Additional keyword arguments to initialize the object's attributes.
+
+    Attributes:
+    db (sql.Database): The database instance used for interactions.
+    table_name (str): The name of the associated database table.
+    excludes (list): A list of attributes to exclude when saving to the database.
+
+    Methods:
+    to_tuple(): Converts the object's attributes to a tuple for database operations.
+    get_value(key): Retrieves the value of the specified attribute.
+    save(): Saves the object's attributes to the database table.
+    delete(): Deletes the corresponding row from the database table.
+
+    Note:
+    - This class provides a foundation for interacting with various database tables.
+    - When creating subclasses, specify the 'table_name' parameter to set the associated database table.
+    - The class automatically fetches the table schema based on 'table_name' during initialization.
+    - The attributes are initialized with provided values from **kwargs or default values based on the schema.
+    - Certain attributes, specified in the 'excludes' list, are not saved to the database.
+    - 'to_tuple()' method is used to convert the attributes to a tuple before database operations.
+    - 'get_value(key)' method returns the value of the specified attribute or id_string if the attribute ends with '_id'.
+    - 'save()' method updates the corresponding row in the database table with the current attribute values.
+    - 'delete()' method deletes the row from the database if the object has a non-empty 'id' attribute.
+    """
     def __init__(self, table_name, **kwargs):
         self.db = sql.Database()
         self.table_name = table_name
-        self.excludes = ['excludes', 'db', 'table_name']
+        self.excludes = ['property_display', 'excludes', 'db', 'table_name']
 
         # Fetch the schema regardless of whether kwargs are provided
         table_info = self.db.get_table_info(self.table_name)
+
+        self.property_display = convert_to_property_display(table_info)
 
         # mark excludes for when we save to DB
         extra_keys = list(set(kwargs.keys()) - set(table_info.keys()))
@@ -79,4 +114,18 @@ class Job(DBObject):
             self.id_string = "No Vehicle??"
         else:
             self.id_string    = f"{self.year} {self.make} {self.model}"
+
+        if len(kwargs.keys()) == 0:
+            self.labor_hourly_rate = DEFAULT_LABOR_HOURLY_RATE
+            self.date_in = datetime.now().strftime("%m-%d-%Y")
+
+    def save(self):
+        float(self.labor_hours)
+        float(self.labor_hourly_rate)
+        float(self.parts_cost)
+        datetime.strptime(self.date_in, '%m-%d-%Y')
+        super().save()
+            
+
+            
 

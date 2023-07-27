@@ -1,31 +1,39 @@
 import sqlite3
-from app.utility.types import Customer, Vehicle, Job, DBObject
-from .functions import singleton
-from collections import namedtuple
+from app.utility.types import Customer, Vehicle, Job
+from .utils import singleton
+from .config import FIELD_HEADER_NAMES
 
 DB_NAME = "mechanic_app.db"
 
-FIELD_HEADER_NAMES = {
-    'customer_id': 'Customer',
-    'vehicle_id': 'Vehicle',
-    'firstname': 'First Name',
-    'lastname': 'Last Name',
-    'email': 'E-Mail',
-    'phone': 'Phone',
-    'address': 'Address',
-    'notes': 'Notes',
-    'year': 'Year',
-    'make': 'Make',
-    'model': 'Model',
-    'vin': 'VIN',
-    'description': 'Description',
-    'cost': 'Cost',
-    'mileage_in': 'Mileage In',
-    'mileage_out': 'Mileage Out'
-}
-
 @singleton
 class Database:
+    """
+    Represents a SQLite database connection and provides methods for interacting with database tables.
+
+    Attributes:
+    conn: The SQLite database connection object.
+    cursor: The SQLite cursor object for executing SQL queries.
+
+    Methods:
+    close(): Closes the database connection.
+    get_table_info(table_name): Retrieves information about the columns of the specified table.
+    create_row(table_name, keys_values): Inserts a new row into the specified table with the provided data.
+    update_row(table_name, keys_values): Updates an existing row in the specified table with the provided data.
+    delete_row(table_name, id): Deletes a row with the given 'id' from the specified table.
+    read_row(table_name, id): Retrieves a single row from the specified table with the given 'id'.
+    search_rows(table_name, select='*', left_join='', search_query='', offset=None, page_size=None):
+        Searches for rows in the specified table that match the provided 'search_query'.
+    get_object(table_name, **row_dict): Returns an instance of the corresponding class mapped to the 'table_name'.
+
+    Note:
+    - This class encapsulates database-related operations using SQLite.
+    - It provides functionalities to perform CRUD operations on different database tables.
+    - The class is designed to work with specific table schemas (customers, vehicles, jobs) and their corresponding classes.
+    - The 'initialize_db()' method creates the necessary tables if they don't exist.
+    - It supports queries to retrieve, insert, update, and delete data from the database.
+    - The 'search_rows()' method allows searching for rows based on text matching in the specified columns.
+    - The 'get_object()' method is used to map database rows to corresponding class instances.
+    """
     def __init__(self):
         self.conn = sqlite3.connect(DB_NAME)
         self.cursor = self.conn.cursor()   
@@ -38,6 +46,8 @@ class Database:
         return {column[1]: column[2] for column in self.cursor.fetchall()}  # map column names to data types
 
     def create_row(self, table_name, keys_values):
+        keys_values = {key: value for key, value in keys_values.items() if key != 'id'}
+
         keys_clause = ", ".join(keys_values.keys())
         placeholders = ", ".join(["?" for _ in keys_values])
         sql_query = f"INSERT INTO {table_name} ({keys_clause}) VALUES ({placeholders})"
@@ -50,7 +60,7 @@ class Database:
         cols = self.get_table_info(table_name).keys()
         keys_values = {key: value for key, value in keys_values.items() if key in cols}
 
-        if ('id' not in keys_values.keys()): 
+        if ('id' not in keys_values or keys_values['id'] == '' or keys_values['id'] == None): 
             return self.create_row(table_name, keys_values)
 
         set_clause = ", ".join([f"{key}=?" for key in keys_values.keys()])
@@ -125,6 +135,8 @@ class Database:
                 year INTEGER,
                 make TEXT,
                 model TEXT,
+                licence_number TEXT,
+                licence_state TEXT,
                 vin TEXT,
                 notes TEXT,
                 FOREIGN KEY (customer_id) 
@@ -137,11 +149,13 @@ class Database:
             CREATE TABLE IF NOT EXISTS jobs (
                 id INTEGER PRIMARY KEY,
                 vehicle_id INTEGER,
-                description TEXT,
+                date_in DATE,
+                repairs TEXT,
+                labor_hours REAL,
+                labor_hourly_rate REAL,
+                parts_cost REAL,
+                mileage INTEGER,
                 notes TEXT,
-                cost TEXT,
-                mileage_in INTEGER,
-                mileage_out INTEGER,
                 FOREIGN KEY (vehicle_id) 
                             REFERENCES vehicles(id)
                             ON DELETE SET NULL
@@ -152,6 +166,39 @@ class Database:
 
 @singleton
 class SQLConnection:
+    """
+    Represents a singleton instance of an SQLite database connection.
+
+    Note:
+    - This class is a singleton created using the 'singleton' decorator.
+    - It provides access to a single instance of the 'Database' class throughout the application.
+    - The 'db' attribute represents the underlying 'Database' instance.
+    - The class offers convenience methods for querying specific tables (customers, vehicles, jobs).
+    - The methods retrieve data from the 'Database' instance and return relevant class instances.
+    - It facilitates searching and retrieving paginated data from different tables.
+    - Use this class to interact with the database in a consistent and efficient manner.
+
+    Methods:
+    close(): Closes the underlying database connection.
+    get_table_info(table_name): Retrieves information about the columns of the specified table.
+    id_customer(id): Retrieves a customer from the database with the specified 'id'.
+    search_customers(text="", page=1, page_size=25): Searches for customers in the database based on the provided search 'text'.
+    id_vehicle(id): Retrieves a vehicle from the database with the specified 'id'.
+    search_vehicles(text="", page=1, page_size=25): Searches for vehicles in the database based on the provided search 'text'.
+    id_job(id): Retrieves a job from the database with the specified 'id'.
+    search_jobs(text="", page=1, page_size=25): Searches for jobs in the database based on the provided search 'text'.
+
+    Note:
+    - The class uses the 'singleton' decorator to ensure a single instance of the 'Database' class is utilized
+      across all calls, promoting resource efficiency and data consistency.
+    - It provides methods to access specific tables (customers, vehicles, jobs) in a structured manner,
+      allowing retrieval of relevant class instances and data based on specific queries.
+    - The 'search_customers()', 'search_vehicles()', and 'search_jobs()' methods support text-based search
+      within the respective tables, enabling easy data retrieval based on user input.
+    - The 'id_customer()', 'id_vehicle()', and 'id_job()' methods allow fetching individual records
+      from the respective tables using their unique 'id' attribute.
+    - Use this class as the main entry point for performing database operations in the application.
+    """
     def __init__(self):
         self.db = Database()
         self.db.initialize_db()
