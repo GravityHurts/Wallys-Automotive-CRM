@@ -18,6 +18,7 @@ class MainWindow(tk.Frame):
 
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(padx=4, pady=4, expand=True, fill='both')
+        self.notebook.parent = self
 
         #Customers tab
         self.customersearch = CustomerSearch(self.notebook)

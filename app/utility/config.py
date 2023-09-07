@@ -21,4 +21,9 @@ FIELD_HEADER_NAMES = {
     'mileage': 'Mileage',
 }
 
+FIELD_HEADER_NAMES_RLOOKUP = {}
+for k,v in FIELD_HEADER_NAMES.items():
+    FIELD_HEADER_NAMES_RLOOKUP[v] = k
+
+
 DEFAULT_LABOR_HOURLY_RATE = 75

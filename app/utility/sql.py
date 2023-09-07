@@ -85,7 +85,7 @@ class Database:
         else:
             return None
 
-    def search_rows(self, table_name, select='*', left_join='', search_query='', offset=None, page_size=None):
+    def search_rows(self, table_name, select='*', left_join='', search_query='', offset=None, page_size=None, sort=None):
         sql_query = f"SELECT {select} FROM {table_name} "
 
         if left_join != '':
@@ -93,9 +93,13 @@ class Database:
 
         if search_query != '':
             sql_query += f"WHERE {search_query} "
+            
+        if sort is not None and sort["method"] != "NONE" and sort["column"] != "":
+            sql_query += f"ORDER BY {sort['column']} {sort['method']} "
 
         if offset is not None and page_size is not None:
-            sql_query += f"LIMIT {offset},{page_size}"
+            sql_query += f"LIMIT {offset},{page_size} "
+            
 
         self.cursor.execute(sql_query)
         rows = self.cursor.fetchall()
@@ -210,13 +214,13 @@ class SQLConnection:
         if id == '': return None
         return self.db.read_row('customers', id)
 
-    def search_customers(self, text="", page=1, page_size=25):
+    def search_customers(self, text="", page=1, page_size=25, sort=None):
         offset = (page-1) * 1 # the offset value of what "page" we're on
 
         keys = self.db.get_table_info('customers').keys()
         search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
         
-        return self.db.search_rows('customers', search_query=search, offset=offset, page_size=page_size)
+        return self.db.search_rows('customers', search_query=search, offset=offset, page_size=page_size, sort=sort)
 
     # VEHICLE QUERIES
     def id_vehicle(self, id):
