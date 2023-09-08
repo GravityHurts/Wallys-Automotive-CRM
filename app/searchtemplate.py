@@ -77,7 +77,7 @@ class Search(tk.Frame):
 
         self.page_frame = tk.Frame(self)
         #self.page_frame.pack(pady=10, padx=20, anchor=tk.CENTER, expand=True, fill=tk.X)
-        self.page_frame.grid(row=2, column=0, sticky='ew')
+        self.page_frame.grid(row=2, column=0, sticky='ew', pady=5)
 
         self.page_frame.grid_columnconfigure(0, weight=2)
         self.page_frame.grid_columnconfigure(1, weight=1)
@@ -115,10 +115,10 @@ class Search(tk.Frame):
         return math.ceil(self.count/self.entries_per_page)
 
     def update_page_label(self):
-        print(self.params['name'], "test", self.count, self.page_number)
+        #print(self.params['name'], "test", self.count, self.page_number)
         if self.count >= self.entries_per_page:
-            self.page_frame.grid(row=2, column=0, sticky='ew')
-            self.page_label.config(text=f"Page {self.page_number} of {self.total_pages()}")
+            self.page_frame.grid(row=2, column=0, sticky='ew', pady=5)
+            self.page_label.config(text=f"Page {self.page_number} of {self.total_pages()} (Total entries: {self.count})")
         else:
             self.page_frame.grid_forget()
             self.page_label.config(text=f"Page {self.page_number}")
