@@ -98,6 +98,7 @@ class Database:
             sql_query += f"ORDER BY {sort['column']} {sort['method']} "
 
         if offset is not None and page_size is not None:
+            offset = offset*page_size
             sql_query += f"LIMIT {offset},{page_size} "
             
 
@@ -109,7 +110,15 @@ class Database:
             for row in rows:
                 row_dict = dict(zip(columns, row))
                 db_objects.append(self.get_object(table_name, **row_dict))
-        return db_objects
+
+
+        self.cursor.execute( f"SELECT COUNT(*) FROM ({sql_query.split('LIMIT')[0]}) AS subquery")
+        l = self.cursor.fetchone()[0]
+
+        return {
+            'entries': db_objects,
+            'count': l
+        }
 
     def get_object(self, table_name, **row_dict):
         table_map = {
