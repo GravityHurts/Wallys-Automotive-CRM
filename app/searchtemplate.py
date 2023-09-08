@@ -16,6 +16,7 @@ class Search(tk.Frame):
         self.parent = parent
         self.params = params
         self.count = 0
+        self.after_id = None
 
         self.options = {
             "All Vehicles with this Customer": self.show_all_vehicles
@@ -96,10 +97,21 @@ class Search(tk.Frame):
         for k,v in self.options.items():
             self.context_menu.add_command(label=k, command=v)
 
-        self.isLoading = False
-        self.load_entries()  # Load the initial page of entries
+        self.bind("<Configure>", self.delayed_update)
 
+        self.isLoading = False
         self.timer_started = False
+
+        # Load the initial page of entries
+        # This now triggers when the app loads in update_resize
+        #self.load_entries() 
+
+    def update_resize(self):
+        height = self.treeview.winfo_height()
+        width = self.treeview.winfo_width()
+        max_entries = (height - 25) // 20
+        self.entries_per_page = math.floor(max_entries)
+        self.load_entries()
 
     def prev_page(self):
         if self.page_number > 1:
@@ -112,13 +124,16 @@ class Search(tk.Frame):
             self.load_entries()
 
     def total_pages(self):
-        return math.ceil(self.count/self.entries_per_page)
+        if self.entries_per_page > 0:
+            return math.ceil(self.count/self.entries_per_page)
+        else: 
+            return 9999999999
 
     def update_page_label(self):
-        #print(self.params['name'], "test", self.count, self.page_number)
+        print(self.params['name'], "test", self.count, self.page_number)
         if self.count >= self.entries_per_page:
             self.page_frame.grid(row=2, column=0, sticky='ew', pady=5)
-            self.page_label.config(text=f"Page {self.page_number} of {self.total_pages()} (Total entries: {self.count})")
+            self.page_label.config(text=f"Page {self.page_number} of {self.total_pages()} (Total entries: {self.count} - Per page: {self.entries_per_page})")
         else:
             self.page_frame.grid_forget()
             self.page_label.config(text=f"Page {self.page_number}")
@@ -141,6 +156,21 @@ class Search(tk.Frame):
     def get_function(self, starting_name, obj=None):
         key = 'dbname'
         return getattr(obj, f"{starting_name}_{self.params[key]}")
+
+    def delayed_update(self, event):
+        l = getattr(self, "lastevent", "")
+        if l != "" and l.width == event.width and l.height == event.height:
+            return
+        else: 
+            if l != "":
+                print("width", l.width, event.width)
+                print("height", l.height, event.height)
+            self.lastevent = event
+        
+        if self.after_id:
+            self.after_cancel(self.after_id)
+        self.after_id = self.after(800, self.update_resize)  # 500ms delay
+        #print("load", event)
 
     #@debounce(wait_time=1)
     def load_entries(self, *args):
