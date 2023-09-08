@@ -1,23 +1,18 @@
 
 from .utility.sql import SQLConnection, FIELD_HEADER_NAMES
-
-from .utility.types import Customer
 from .utility.types import COLUMN_INITIAL_WIDTH
-from .textwithvar import TextWithVar
-
 from .editwindow import EditEntity
 
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox
-
 
 sql = SQLConnection()
 
-class CustomerSearch(tk.Frame):
-    def __init__(self, parent, entries_per_page=20):
+class Search(tk.Frame):
+    def __init__(self, parent, params, entries_per_page=20):
         super().__init__(parent)
         self.parent = parent
+        self.params = params
 
         self.options = {
             "All Vehicles with this Customer": self.show_all_vehicles
@@ -44,22 +39,23 @@ class CustomerSearch(tk.Frame):
         #self.search_entry.bind("<KeyRelease>", self.load_entries)
         self.search_entry.bind("<Return>", self.load_entries)
 
-        # New customer button
-        self.new_customer_button = tk.Button(search_frame, text="New Customer", command=self.edit_customer)
-        self.new_customer_button.pack(pady=10, padx=20, side=tk.RIGHT)
+        # New item button
+        self.new_item_button = tk.Button(search_frame, text=f"New {self.params['name']}", command=self.edit_item)
+        self.new_item_button.pack(pady=10, padx=20, side=tk.RIGHT)
 
         # search button
-        self.new_customer_button = tk.Button(search_frame, text="Search", command=self.load_entries)
-        self.new_customer_button.pack(pady=10, padx=20, side=tk.RIGHT)
+        self.search_button = tk.Button(search_frame, text="Search", command=self.load_entries)
+        self.search_button.pack(pady=10, padx=20, side=tk.RIGHT)
 
         # Treeview
         self.treeview = ttk.Treeview(self)
         self.treeview.pack(expand=True, fill=tk.BOTH)
         #self.treeview.bind("<<TreeviewSelect>>", self.on_select)
-        self.treeview.bind("<Button-1>", self.on_click)
+        self.treeview.bind("<ButtonPress-1>", self.start_timer)
+        self.treeview.bind("<ButtonRelease-1>", self.check_click_or_resize)
         self.treeview.bind("<Double-1>", self.on_select)
         self.treeview.bind("<Button-3>", self.on_right_click)
-        self.keys = list(sql.get_table_info('customers').keys())
+        self.keys = list(sql.get_table_info(self.params['dbname']).keys())
         self.treeview['columns'] = self.keys
 
         self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
@@ -78,13 +74,33 @@ class CustomerSearch(tk.Frame):
         self.isLoading = False
         self.load_entries()  # Load the initial page of entries
 
+        self.timer_started = False
+
+    def start_timer(self, event):
+        col = self.treeview.identify_column(event.x)
+        if col:
+            self.timer_started = True
+            self.parent.after(200, self.set_timer_flag_to_false)
+
+    def set_timer_flag_to_false(self):
+        self.timer_started = False
+
+    def check_click_or_resize(self, event):
+        col = self.treeview.identify_column(event.x)
+        if col and self.timer_started:
+            self.on_click(event)
+
+    def get_function(self, starting_name, obj=None):
+        key = 'dbname'
+        return getattr(obj, f"{starting_name}_{self.params[key]}")
+
     #@debounce(wait_time=1)
     def load_entries(self, *args):
         if self.isLoading == False:
             self.isLoading = True
             search_text = self.search_entry.get()#.lower()
             #self.entries = [entry for entry in self.entries if search_text in entry.lower()]
-            self.entries = sql.search_customers(text=search_text, page=self.page_number, page_size=self.entries_per_page, sort=self.sort_type)
+            self.entries = self.get_function("search", obj=sql)(text=search_text, page=self.page_number, page_size=self.entries_per_page, sort=self.sort_type)
 
             self.update_treeview()
 
@@ -98,10 +114,10 @@ class CustomerSearch(tk.Frame):
             self.treeview.insert("", tk.END, values=entry.to_tuple(), iid=counter)  
             counter += 1
             
-    def edit_customer(self, entry=None):
+    def edit_item(self, entry=None):
         new_window = tk.Toplevel(self)
-        new_window.title("Customer Info")
-        ec = EditEntity(new_window, 'Customer', entry, self.load_entries).pack(expand=True, fill=tk.BOTH)
+        new_window.title(f"{self.params['name']} Info")
+        ec = EditEntity(new_window, self.params['name'], entry, self.load_entries).pack(expand=True, fill=tk.BOTH)
 
     def on_select(self, event):
         if event.y < 25:
@@ -109,7 +125,7 @@ class CustomerSearch(tk.Frame):
         else:
             selected_entry = self.get_selected_item()
             if selected_entry is not None:
-                self.edit_customer(selected_entry)
+                self.edit_item(selected_entry)
 
     def get_selected_item(self):
         selected_item = self.treeview.focus()

@@ -227,7 +227,7 @@ class SQLConnection:
         if id == '': return None
         return self.db.read_row('vehicles', id)
 
-    def search_vehicles(self, text="", page=1, page_size=25):
+    def search_vehicles(self, text="", page=1, page_size=25, sort=None):
         offset = (page-1) * page_size  # the offset value of what "page" we're on
 
         select = 'vehicles.*, customers.firstname, customers.lastname'
@@ -235,16 +235,21 @@ class SQLConnection:
 
         keys = ['vehicles.'+key for key in self.db.get_table_info('vehicles').keys()]
         keys += ['customers.firstname', 'customers.lastname']
-        search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
-        
-        return self.db.search_rows('vehicles', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size)
+        search = ""
+        if text.strip() != "":
+            search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
+            print(search)
+            search = " || ' ' || ".join(keys) + f" LIKE '%{text}%'"
+            print(search)
+
+        return self.db.search_rows('vehicles', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort)
 
     # JOB QUERIES
     def id_job(self, id):
         if id == '': return None
         return self.db.read_row('jobs', id)
     
-    def search_jobs(self, text="", page=1, page_size=25):
+    def search_jobs(self, text="", page=1, page_size=25, sort=None):
         offset = (page-1) * page_size  # the offset value of what "page" we're on
 
         select = 'jobs.*, vehicles.year, vehicles.make, vehicles.model'
@@ -254,5 +259,5 @@ class SQLConnection:
         keys += ['vehicles.year', 'vehicles.make', 'vehicles.model']
         search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
         
-        return self.db.search_rows('jobs', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size)
+        return self.db.search_rows('jobs', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort)
 

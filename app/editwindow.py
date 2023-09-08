@@ -18,7 +18,6 @@ class IDSuggestEntry(AutocompleteEntry):
 
     def comparison(self): 
         search_text = self.var.get()
-        #return sql.search_customers(search_text, 1, 8)
         return self.search_function(search_text, 1, 8)
     
 class EditEntity(tk.Frame):
@@ -126,7 +125,7 @@ class EditEntity(tk.Frame):
             self.entity.save()
             self.close_window()
         except ValueError as e:
-            messagebox.showerror("Invalid Format", f"One of the properties is not in the expected format:\n{e}")
+            messagebox.showerror("Invalid Format", f"One of the properties is not in the expected format:\n{e}", parent=self)
             self.focus()
 
 
@@ -142,7 +141,7 @@ class EditEntity(tk.Frame):
     def close_window(self):
         if self.has_changed():
             # Ask for confirmation before quitting with unsaved changes
-            result = messagebox.askyesno("Discard Changes", "You have unsaved changes. YES = Close without saving")
+            result = messagebox.askyesno("Discard Changes", "You have unsaved changes. YES = Close without saving", parent=self)
 
             if result:
                 self.close()
@@ -158,7 +157,7 @@ class EditEntity(tk.Frame):
 
     def delete_entity(self):
         # Ask for confirmation before deleting
-        result = messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this Entity?")
+        result = messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this Entity?", parent=self)
 
         if result:
             self.entity.delete()
