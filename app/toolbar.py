@@ -18,5 +18,5 @@ class Toolbar(tk.Frame):
         self.parent.parent.config(menu=menu_bar)
 
     def close_app(self):
-        self.parent.destroy()
+        self.parent.parent.destroy()
         

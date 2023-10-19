@@ -63,7 +63,7 @@ class Search(tk.Frame):
         self.treeview.bind("<ButtonPress-1>", self.start_timer)
         self.treeview.bind("<ButtonRelease-1>", self.check_click_or_resize)
         self.treeview.bind("<Double-1>", self.on_select)
-        self.treeview.bind("<Button-3>", self.on_right_click)
+        #self.treeview.bind("<Button-3>", self.on_right_click)
         self.keys = list(sql.get_table_info(self.params['dbname']).keys())
         self.treeview['columns'] = self.keys
 
@@ -76,6 +76,7 @@ class Search(tk.Frame):
             self.treeview.column(key, anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
             self.treeview.heading(key, text=FIELD_HEADER_NAMES[key])
 
+        # left/right buttons for "paging"
         self.page_frame = tk.Frame(self)
         #self.page_frame.pack(pady=10, padx=20, anchor=tk.CENTER, expand=True, fill=tk.X)
         self.page_frame.grid(row=2, column=0, sticky='ew', pady=5)
@@ -93,9 +94,12 @@ class Search(tk.Frame):
         self.right_arrow = tk.Button(self.page_frame, text="  →  ", cursor="hand2", command=self.next_page)
         self.right_arrow.grid(row=0, column=2, sticky='w')
 
-        self.context_menu = tk.Menu(self, tearoff=0)
-        for k,v in self.options.items():
-            self.context_menu.add_command(label=k, command=v)
+        # hide the page arrows until we load data
+        self.page_frame.grid_forget()
+
+        #self.context_menu = tk.Menu(self, tearoff=0)
+        #for k,v in self.options.items():
+        #    self.context_menu.add_command(label=k, command=v)
 
         self.bind("<Configure>", self.delayed_update)
 
@@ -107,10 +111,14 @@ class Search(tk.Frame):
         #self.load_entries() 
 
     def update_resize(self):
-        height = self.treeview.winfo_height()
-        width = self.treeview.winfo_width()
-        max_entries = (height - 25) // 20
+        height = self.winfo_height()
+        max_entries = (height - 112) // 20
         self.entries_per_page = math.floor(max_entries)
+        if ((self.count / self.entries_per_page) <= 1):
+            self.page_number = 1
+        elif ((self.count / self.entries_per_page) < self.page_number):
+            self.page_number = math.ceil(self.count / self.entries_per_page)
+
         self.load_entries()
 
     def prev_page(self):
@@ -130,14 +138,13 @@ class Search(tk.Frame):
             return 9999999999
 
     def update_page_label(self):
-        print(self.params['name'], "test", self.count, self.page_number)
+        #print(self.params['name'], "test", self.count, self.page_number)
         if self.count >= self.entries_per_page:
             self.page_frame.grid(row=2, column=0, sticky='ew', pady=5)
             self.page_label.config(text=f"Page {self.page_number} of {self.total_pages()} (Total entries: {self.count} - Per page: {self.entries_per_page})")
         else:
             self.page_frame.grid_forget()
             self.page_label.config(text=f"Page {self.page_number}")
-
 
     def start_timer(self, event):
         col = self.treeview.identify_column(event.x)
@@ -162,9 +169,9 @@ class Search(tk.Frame):
         if l != "" and l.width == event.width and l.height == event.height:
             return
         else: 
-            if l != "":
-                print("width", l.width, event.width)
-                print("height", l.height, event.height)
+            #if l != "":
+                #print("width", l.width, event.width)
+                #print("height", l.height, event.height)
             self.lastevent = event
         
         if self.after_id:
@@ -179,7 +186,7 @@ class Search(tk.Frame):
             search_text = self.search_entry.get()#.lower()
             #self.entries = [entry for entry in self.entries if search_text in entry.lower()]
             entries = self.get_function("search", obj=sql)(text=search_text, page=self.page_number, page_size=self.entries_per_page, sort=self.sort_type)
-
+            
             self.entries = entries['entries']
             self.count = entries['count']
 

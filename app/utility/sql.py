@@ -85,23 +85,34 @@ class Database:
         else:
             return None
 
-    def search_rows(self, table_name, select='*', left_join='', search_query='', offset=None, page_size=None, sort=None):
+    def search_rows(self, table_name, select='*', left_join=[], search_query='', offset=None, page_size=None, sort=None, priority_query=None):
         sql_query = f"SELECT {select} FROM {table_name} "
-
-        if left_join != '':
-            sql_query += f"LEFT JOIN {left_join} "
+        if (type(left_join) == str):
+            left_join = [left_join]
+            
+        if len(left_join) > 0:
+            for lj in left_join:
+                sql_query += f"LEFT JOIN {lj} "
 
         if search_query != '':
             sql_query += f"WHERE {search_query} "
+
+        if priority_query:
+            sql_query += f"ORDER BY {priority_query} "
             
         if sort is not None and sort["method"] != "NONE" and sort["column"] != "":
-            sql_query += f"ORDER BY {sort['column']} {sort['method']} "
+            if priority_query:
+                sql_query += ', '
+            else:
+                sql_query += "ORDER BY "
+
+            sql_query += f"{sort['column']} {sort['method']} "
 
         if offset is not None and page_size is not None:
             offset = offset*page_size
             sql_query += f"LIMIT {offset},{page_size} "
             
-
+        print(sql_query)
         self.cursor.execute(sql_query)
         rows = self.cursor.fetchall()
         db_objects = []
@@ -227,9 +238,14 @@ class SQLConnection:
         offset = (page-1) * 1 # the offset value of what "page" we're on
 
         keys = self.db.get_table_info('customers').keys()
-        search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
+        keys2 = ['customers.firstname', 'customers.lastname']
+        search = ""
+        pquery = None
+        if text.strip() != "":
+            search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
+            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
         
-        return self.db.search_rows('customers', search_query=search, offset=offset, page_size=page_size, sort=sort)
+        return self.db.search_rows('customers', search_query=search, offset=offset, page_size=page_size, sort=sort, priority_query=pquery)
 
     # VEHICLE QUERIES
     def id_vehicle(self, id):
@@ -243,15 +259,16 @@ class SQLConnection:
         left_join = 'customers ON customers.id = vehicles.customer_id'
 
         keys = ['vehicles.'+key for key in self.db.get_table_info('vehicles').keys()]
-        keys += ['customers.firstname', 'customers.lastname']
+        keys2 = ['customers.firstname', 'customers.lastname']
+        keys += keys2
         search = ""
+        pquery = None
         if text.strip() != "":
             search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
-            print(search)
-            search = " || ' ' || ".join(keys) + f" LIKE '%{text}%'"
-            print(search)
+            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
 
-        return self.db.search_rows('vehicles', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort)
+
+        return self.db.search_rows('vehicles', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort, priority_query=pquery)
 
     # JOB QUERIES
     def id_job(self, id):
@@ -262,11 +279,16 @@ class SQLConnection:
         offset = (page-1) * page_size  # the offset value of what "page" we're on
 
         select = 'jobs.*, vehicles.year, vehicles.make, vehicles.model'
-        left_join = 'vehicles ON vehicles.id = jobs.vehicle_id'
+        left_join = ['vehicles ON vehicles.id = jobs.vehicle_id', 'customers ON customers.id = vehicles.customer_id']
 
         keys = ['jobs.'+key for key in self.db.get_table_info('jobs').keys()]
-        keys += ['vehicles.year', 'vehicles.make', 'vehicles.model']
-        search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
+        keys2 = ['customers.firstname', 'customers.lastname', 'vehicles.year', 'vehicles.make', 'vehicles.model']
+        keys += keys2
+        search = ""
+        pquery = None
+        if text.strip() != "":
+            search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
+            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
         
-        return self.db.search_rows('jobs', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort)
+        return self.db.search_rows('jobs', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort, priority_query=pquery)
 

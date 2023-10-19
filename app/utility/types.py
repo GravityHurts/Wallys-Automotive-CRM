@@ -117,14 +117,33 @@ class Job(DBObject):
 
         if len(kwargs.keys()) == 0:
             self.labor_hourly_rate = DEFAULT_LABOR_HOURLY_RATE
+            self.parts_cost = 0
+            self.labor_hours = 0
             self.date_in = datetime.now().strftime("%m-%d-%Y")
 
     def save(self):
-        float(self.labor_hours)
-        float(self.labor_hourly_rate)
-        float(self.parts_cost)
-        datetime.strptime(self.date_in, '%m-%d-%Y')
+        try:
+            float(self.labor_hours)
+        except ValueError:
+            raise ValueError("Error: labor_hours is not a number")
+            
+        try:
+            float(self.labor_hourly_rate)
+        except ValueError:
+            raise ValueError("Error: labor_hourly_rate is not a number")
+
+        try:
+            float(self.parts_cost)
+        except ValueError:
+            raise ValueError("Error: parts_cost is not a number")
+            
+        try:
+            datetime.strptime(self.date_in, '%m-%d-%Y')
+        except ValueError:
+            raise ValueError("Error: date_in is not in the correct format")
+            
         super().save()
+
             
 
             

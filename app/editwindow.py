@@ -18,7 +18,8 @@ class IDSuggestEntry(AutocompleteEntry):
 
     def comparison(self): 
         search_text = self.var.get()
-        return self.search_function(search_text, 1, 8)
+        results = self.search_function(search_text, 1, 8)
+        return results['entries']
     
 class EditEntity(tk.Frame):
     def __init__(self, parent, ctype, entity=None, update_list=None):
