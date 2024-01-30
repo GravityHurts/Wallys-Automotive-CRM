@@ -1,4 +1,5 @@
 import sqlite3
+import re
 from app.utility.types import Customer, Vehicle, Job
 from .utils import singleton
 from .config import FIELD_HEADER_NAMES
@@ -112,7 +113,7 @@ class Database:
             offset = offset*page_size
             sql_query += f"LIMIT {offset},{page_size} "
             
-        print(sql_query)
+        #print(sql_query)
         self.cursor.execute(sql_query)
         rows = self.cursor.fetchall()
         db_objects = []
@@ -229,6 +230,18 @@ class SQLConnection:
         self.close = self.db.close
         self.get_table_info = self.db.get_table_info
 
+    def extract_id(self, name, text):
+        pattern = rf"<<\s*{name}:\s*(\d+)\s*>>"
+        match = re.search(pattern, text)
+        if match:
+            id_number = match.group(1)
+            text = re.sub(pattern, "", text)
+            #print(f"{name} ID number:", id_number, text)
+            return (int(id_number), text)
+        else:
+            #print(f"{name} No ID number found.")
+            return (None, text)
+
     # CUSTOMER QUERIES
     def id_customer(self, id):
         if id == '': return None
@@ -254,6 +267,7 @@ class SQLConnection:
 
     def search_vehicles(self, text="", page=1, page_size=25, sort=None):
         offset = (page-1) * page_size  # the offset value of what "page" we're on
+        (id, text) = self.extract_id("customer", text)
 
         select = 'vehicles.*, customers.firstname, customers.lastname'
         left_join = 'customers ON customers.id = vehicles.customer_id'
@@ -267,6 +281,10 @@ class SQLConnection:
             search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
             pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
 
+        if id is not None:
+            if (search.strip() != ""):
+                search = f'({search}) AND '
+            search = f'customers.id = {id}'
 
         return self.db.search_rows('vehicles', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort, priority_query=pquery)
 
@@ -277,6 +295,8 @@ class SQLConnection:
     
     def search_jobs(self, text="", page=1, page_size=25, sort=None):
         offset = (page-1) * page_size  # the offset value of what "page" we're on
+        (v_id, text) = self.extract_id("vehicle", text)
+        (c_id, text) = self.extract_id("customer", text)
 
         select = 'jobs.*, vehicles.year, vehicles.make, vehicles.model'
         left_join = ['vehicles ON vehicles.id = jobs.vehicle_id', 'customers ON customers.id = vehicles.customer_id']
@@ -290,5 +310,16 @@ class SQLConnection:
             search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
             pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
         
+        if v_id is not None:
+            if (search.strip() != ""):
+                search = f'({search}) AND '
+            search = f'vehicles.id = {v_id}'
+
+        if c_id is not None:
+            if (search.strip() != ""):
+                search = f'({search}) AND '
+            search = f'customers.id = {c_id}'
+
         return self.db.search_rows('jobs', select=select, left_join=left_join, search_query=search, offset=offset, page_size=page_size, sort=sort, priority_query=pquery)
+
 

@@ -10,17 +10,14 @@ from tkinter import ttk
 
 sql = SQLConnection()
 
-class Search(tk.Frame):
+class SearchTemplate(tk.Frame):
     def __init__(self, parent, params, entries_per_page=20):
         super().__init__(parent)
         self.parent = parent
         self.params = params
         self.count = 0
         self.after_id = None
-
-        self.options = {
-            "All Vehicles with this Customer": self.show_all_vehicles
-        }
+        self.header_size = 25
         self.sort_type = {
             "column": "",
             "method": "NONE"
@@ -55,6 +52,10 @@ class Search(tk.Frame):
         self.search_button = tk.Button(search_frame, text="Search", command=self.load_entries)
         self.search_button.pack(pady=10, padx=20, side=tk.RIGHT)
 
+        # clear button
+        self.clear_button = tk.Button(search_frame, text="Clear", command=self.clear_search)
+        self.clear_button.pack(pady=10, padx=10, side=tk.RIGHT)
+
         # Treeview
         self.treeview = ttk.Treeview(self)
         #self.treeview.pack(expand=True, fill=tk.BOTH)
@@ -63,7 +64,7 @@ class Search(tk.Frame):
         self.treeview.bind("<ButtonPress-1>", self.start_timer)
         self.treeview.bind("<ButtonRelease-1>", self.check_click_or_resize)
         self.treeview.bind("<Double-1>", self.on_select)
-        #self.treeview.bind("<Button-3>", self.on_right_click)
+        self.treeview.bind("<Button-3>", self.on_right_click)
         self.keys = list(sql.get_table_info(self.params['dbname']).keys())
         self.treeview['columns'] = self.keys
 
@@ -97,9 +98,7 @@ class Search(tk.Frame):
         # hide the page arrows until we load data
         self.page_frame.grid_forget()
 
-        #self.context_menu = tk.Menu(self, tearoff=0)
-        #for k,v in self.options.items():
-        #    self.context_menu.add_command(label=k, command=v)
+        self.context_menu = tk.Menu(self, tearoff=0)
 
         self.bind("<Configure>", self.delayed_update)
 
@@ -194,6 +193,10 @@ class Search(tk.Frame):
 
             self.isLoading = False
 
+    def clear_search(self):
+        self.search_entry.delete(0, tk.END)
+        self.load_entries()
+
     def update_treeview(self):
         self.update_page_label()
         self.treeview.delete(*self.treeview.get_children())
@@ -217,10 +220,10 @@ class Search(tk.Frame):
                 self.edit_item(selected_entry)
 
     def get_selected_item(self):
-        selected_item = self.treeview.focus()
+        selected_item = self.treeview.selection()
         
         if selected_item:
-            selected_index = int(selected_item)  # Extract index from the item ID
+            selected_index = int(selected_item[0])   # Extract index from the item ID
             selected_entry = self.entries[selected_index]
             return selected_entry
         else:
@@ -276,24 +279,21 @@ class Search(tk.Frame):
         self.load_entries()
 
     def on_click(self, event):
-        if event.y < 25: # header click
+        if event.y < self.header_size: # header click
             self.column_sort(event)
         else: # item click
             item = self.treeview.identify_row(event.y)
             self.treeview.selection_set(item)
 
     def on_right_click(self, event):
-        item = self.treeview.identify_row(event.y)
-        self.treeview.selection_set(item)
-        self.context_menu.post(event.x_root, event.y_root)
+        self.on_click(event)
+        if event.y < self.header_size:
+            pass
+        else: 
+            self.context_menu.post(event.x_root, event.y_root)
 
-    def show_all_vehicles(self):
-        selected_entry = self.get_selected_item()
-        if selected_entry is not None:
-            customer_id = selected_entry.id
-            vehicle = self.parent.parent.vehiclesearch
-            vehicle.search_entry.delete(0, tk.END)
-            vehicle.search_entry.insert(0, customer_id)
-            self.parent.select(1)
-            vehicle.load_entries()
-            
+    def init_context_menu(self, options):
+        for k,v in options.items():
+            self.context_menu.add_command(label=k, command=v)
+
+

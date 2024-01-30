@@ -125,22 +125,22 @@ class Job(DBObject):
         try:
             float(self.labor_hours)
         except ValueError:
-            raise ValueError("Error: labor_hours is not a number")
+            raise ValueError(f"Error: {self.property_display['labor_hours']} is not a number")
             
         try:
             float(self.labor_hourly_rate)
         except ValueError:
-            raise ValueError("Error: labor_hourly_rate is not a number")
+            raise ValueError(f"Error: {self.property_display['labor_hourly_rate']} is not a number")
 
         try:
             float(self.parts_cost)
         except ValueError:
-            raise ValueError("Error: parts_cost is not a number")
+            raise ValueError(f"Error: {self.property_display['parts_cost']} is not a number")
             
         try:
-            datetime.strptime(self.date_in, '%m-%d-%Y')
+            datetime.strptime(self.date_in, '%m/%d/%Y')
         except ValueError:
-            raise ValueError("Error: date_in is not in the correct format")
+            raise ValueError(f"Error: {self.property_display['date_in']} is not in the correct format (expected MM/DD/YYYY)")
             
         super().save()
 

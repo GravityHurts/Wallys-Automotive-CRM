@@ -4,7 +4,7 @@ from tkinter import ttk
 
 # local imports
 from .toolbar import Toolbar
-from .searchtemplate import Search
+from .searchtabs import CustomerSearch, VehicleSearch, JobSearch
 
 class MainWindow(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -19,26 +19,17 @@ class MainWindow(tk.Frame):
         self.notebook.parent = self
 
         #Customers tab
-        self.customersearch = Search(self.notebook, {
-            "name": "Customer",
-            "dbname": "customers"
-        })
+        self.customersearch = CustomerSearch(self.notebook)
         self.customersearch.pack(expand=True, fill='both')
         self.notebook.add(self.customersearch, text="Customers")
 
         #Vehicles tab
-        self.vehiclesearch = Search(self.notebook, {
-            "name": "Vehicle",
-            "dbname": "vehicles"
-        })
+        self.vehiclesearch = VehicleSearch(self.notebook)
         self.vehiclesearch.pack(expand=True, fill='both')
         self.notebook.add(self.vehiclesearch, text="Vehicles")
 
         #Jobs tab
-        self.jobsearch = Search(self.notebook, {
-            "name": "Job",
-            "dbname": "jobs"
-        })
+        self.jobsearch = JobSearch(self.notebook)
         self.jobsearch.pack(expand=True, fill='both')
         self.notebook.add(self.jobsearch, text="Jobs")
 
