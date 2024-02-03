@@ -19,6 +19,7 @@ FIELD_HEADER_NAMES = {
     'labor_hourly_rate': '$/Hour Labor',
     'parts_cost': 'Parts Cost',
     'mileage': 'Mileage',
+    'id': 'ID'
 }
 
 FIELD_HEADER_NAMES_RLOOKUP = {}
