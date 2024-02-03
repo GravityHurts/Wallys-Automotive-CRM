@@ -138,9 +138,9 @@ class Job(DBObject):
             raise ValueError(f"Error: {self.property_display['parts_cost']} is not a number")
             
         try:
-            datetime.strptime(self.date_in, '%m/%d/%Y')
+            datetime.strptime(self.date_in, '%m-%d-%Y')
         except ValueError:
-            raise ValueError(f"Error: {self.property_display['date_in']} is not in the correct format (expected MM/DD/YYYY)")
+            raise ValueError(f"Error: {self.property_display['date_in']} is not in the correct format (expected MM-DD-YYYY)")
             
         super().save()
 
