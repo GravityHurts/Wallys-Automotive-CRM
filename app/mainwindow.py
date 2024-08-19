@@ -4,7 +4,10 @@ from tkinter import ttk
 
 # local imports
 from .toolbar import Toolbar
-from .maintabs import CustomerSearch, VehicleSearch, JobSearch
+from .tabs.customers import CustomerSearch
+from .tabs.vehicles import VehicleSearch
+from .tabs.jobs import JobSearch
+from .tabs.settings import Settings
 
 class MainWindow(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -34,7 +37,7 @@ class MainWindow(tk.Frame):
         self.notebook.add(self.jobsearch, text="Jobs")
 
         #Settings tab
-        # self.settingstab = ttk.Frame(self.notebook)
-        # self.jobsearch.pack(expand=True, fill='both')
-        # self.notebook.add(self.settingstab, text="Settings")
+        self.settingstab = Settings(self.notebook)
+        self.settingstab.pack(expand=True, fill='both')
+        self.notebook.add(self.settingstab, text="Settings")
 

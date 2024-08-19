@@ -4,7 +4,7 @@ from app.utility.types import Customer, Vehicle, Job
 from .utils import singleton
 from .config import FIELD_HEADER_NAMES
 
-DB_NAME = "mechanic_app.db"
+DB_NAME = "data/mechanic_app.db"
 
 @singleton
 class Database:

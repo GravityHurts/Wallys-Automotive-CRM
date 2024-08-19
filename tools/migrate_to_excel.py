@@ -17,4 +17,4 @@ def sqlite_to_excel(database_file, excel_file):
     cursor.close()
     conn.close()
 
-sqlite_to_excel('mechanic_app.db', 'output.xlsx')
+sqlite_to_excel('../data/mechanic_app.db', '../output.xlsx')
