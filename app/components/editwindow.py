@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 
-from .utility.types import Customer, Vehicle, Job
+from ..utility.types import Customer, Vehicle, Job
 from .autocompleteentry import AutocompleteEntry
 
 from .textwithvar import TextWithVar
 
-from .utility.sql import SQLConnection
+from ..utility.sql import SQLConnection
 
 sql = SQLConnection()
 

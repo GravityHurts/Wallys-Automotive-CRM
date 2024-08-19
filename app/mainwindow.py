@@ -4,15 +4,15 @@ from tkinter import ttk
 
 # local imports
 from .toolbar import Toolbar
-from .searchtabs import CustomerSearch, VehicleSearch, JobSearch
+from .maintabs import CustomerSearch, VehicleSearch, JobSearch
 
 class MainWindow(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
-        self.toolbar = Toolbar(self)
-        self.toolbar.pack(side="top", fill="x")
+        #self.toolbar = Toolbar(self)
+        #self.toolbar.pack(side="top", fill="x")
 
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(padx=4, pady=4, expand=True, fill='both')
@@ -32,4 +32,9 @@ class MainWindow(tk.Frame):
         self.jobsearch = JobSearch(self.notebook)
         self.jobsearch.pack(expand=True, fill='both')
         self.notebook.add(self.jobsearch, text="Jobs")
+
+        #Settings tab
+        # self.settingstab = ttk.Frame(self.notebook)
+        # self.jobsearch.pack(expand=True, fill='both')
+        # self.notebook.add(self.settingstab, text="Settings")
 

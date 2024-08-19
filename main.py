@@ -5,8 +5,9 @@ class MainApplication(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.title("Mechanic app")
+        self.title("Wally's Automotive")
         self.geometry("800x600")
+        self.iconbitmap("media/app.ico")
 
         self.mw = app.MainWindow(self)
         self.mw.pack(fill='both', expand=True)

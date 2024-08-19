@@ -1,4 +1,4 @@
-from .searchtemplate import *
+from .components.searchtemplate import *
 
 class CustomerSearch(SearchTemplate):
     def __init__(self, parent):

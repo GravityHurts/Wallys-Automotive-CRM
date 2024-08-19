@@ -1,6 +1,6 @@
 
-from .utility.sql import SQLConnection, FIELD_HEADER_NAMES
-from .utility.types import COLUMN_INITIAL_WIDTH
+from ..utility.sql import SQLConnection, FIELD_HEADER_NAMES
+from ..utility.types import COLUMN_INITIAL_WIDTH
 from .editwindow import EditEntity
 
 import math
