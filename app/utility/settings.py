@@ -30,7 +30,7 @@ defaults = {
 def validate_settings():
     conf = load_ini_settings()
 
-    resolution_pattern = r'^(\d{3,4})x(\d{3,4}})$'        
+    resolution_pattern = r'^(\d{3,4})x(\d{3,4})$'
     if not re.match(resolution_pattern, conf['application']['window size']):
         conf['application']['window size'] = defaults['application']['window size']
 

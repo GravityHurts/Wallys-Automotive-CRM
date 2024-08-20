@@ -64,7 +64,7 @@ class EditEntity(tk.Frame):
         self.property_widgets = {}
 
         for property_name, label_text in self.properties.items():
-            if property_name.lower() == 'id':
+            if property_name.lower() == 'id' or property_name.lower() == 'work_order_number':
                 continue
 
             var = tk.StringVar()
@@ -93,6 +93,8 @@ class EditEntity(tk.Frame):
                 entry.grid(row=row, column=1, sticky="ew", columnspan=3)
 
             self.property_widgets[property_name] = (var, entry)
+            if not self.new_entity:
+                entry.focus_set()
             row += 1
 
         # Save Button
@@ -182,5 +184,8 @@ class EditEntity(tk.Frame):
 
             if property_name.lower() == 'notes':
                 widget.update_textvariable()
+        
+        if hasattr(self.entity, 'work_order_number'):
+            self.parent.title(f'Work Order {getattr(self.entity, "work_order_number")}')
         
 

@@ -26,6 +26,10 @@ class Settings(tk.Frame):
                     pass
                 widget.grid(row=idx + 1, column=2)
 
+        save_button = tk.Button(self, text="Save", command=settings.save_settings)
+        save_button.pack()
+        
+
     def create_setting_var(self, value: Any):
         if isinstance(value, bool):
             return tk.BooleanVar(value=value)
