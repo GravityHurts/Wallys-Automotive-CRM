@@ -45,7 +45,7 @@ class SearchTemplate(tk.Frame):
         self.new_item_button.pack(pady=10, padx=20, side=tk.LEFT)
 
         # Search Entry
-        self.search_entry = ClearableEntry(search_frame)
+        self.search_entry = ClearableEntry(search_frame, takefocus=True)
         self.search_entry.size()
         self.search_entry.pack(pady=10, padx=20, side=tk.LEFT, expand=True, fill=tk.X)
         #self.search_entry.bind("<KeyRelease>", self.load_entries)

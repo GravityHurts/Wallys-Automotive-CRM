@@ -41,3 +41,10 @@ class MainWindow(tk.Frame):
         self.settingstab.pack(expand=True, fill='both')
         self.notebook.add(self.settingstab, text="Settings")
 
+        self.notebook.bind("<<NotebookTabChanged>>", self.changed)
+
+    def changed(self, event):
+        a = self.notebook.select()
+        if not 'settings' in a:
+            self.notebook.nametowidget(self.notebook.select()).search_entry.focus_set()
+
