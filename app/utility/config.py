@@ -5,26 +5,26 @@ FIELD_HEADER_NAMES = {
     'lastname': 'Last Name',
     'email': 'E-Mail',
     'phone': 'Phone',
-    'address': 'Address',
+    'street_address': 'Street Address',
+    'city_address': 'City',
+    'state_address': 'State',
+    'zip_address': 'ZIP Code',
     'notes': 'Notes',
     'year': 'Year',
     'make': 'Make',
     'model': 'Model',
     'licence_number': 'Licence Plate',
-    'licence_state': 'Licence State',
-    'date_in': 'Date of Job',
+    'date_completed': 'Date Completed',
     'vin': 'VIN',
-    'repairs': 'Repairs',
+    'repairs': 'Repairs Made',
     'labor_hours': 'Labor Hours',
-    'labor_hourly_rate': '$/Hour Labor',
-    'parts_cost': 'Parts Cost',
+    'labor_cost': 'Labor Cost $',
+    'parts_cost': 'Parts Cost $',
     'mileage': 'Mileage',
-    'id': 'ID'
+    'id': 'ID',
+    'work_order_number': 'Work Order #'
 }
 
 FIELD_HEADER_NAMES_RLOOKUP = {}
 for k,v in FIELD_HEADER_NAMES.items():
     FIELD_HEADER_NAMES_RLOOKUP[v] = k
-
-
-DEFAULT_LABOR_HOURLY_RATE = 75

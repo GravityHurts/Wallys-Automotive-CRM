@@ -148,7 +148,10 @@ class Database:
                 lastname TEXT,
                 email TEXT,
                 phone TEXT,
-                address TEXT,
+                street_address TEXT,
+                city_address TEXT,
+                state_address TEXT,
+                zip_address TEXT,
                 notes TEXT
             )
         ''')
@@ -161,7 +164,6 @@ class Database:
                 make TEXT,
                 model TEXT,
                 licence_number TEXT,
-                licence_state TEXT,
                 vin TEXT,
                 notes TEXT,
                 FOREIGN KEY (customer_id) 
@@ -174,12 +176,13 @@ class Database:
             CREATE TABLE IF NOT EXISTS jobs (
                 id INTEGER PRIMARY KEY,
                 vehicle_id INTEGER,
-                date_in DATE,
+                work_order_id TEXT,
+                date_completed TEXT,
+                mileage INTEGER,
                 repairs TEXT,
                 labor_hours REAL,
-                labor_hourly_rate REAL,
+                labor_cost REAL,
                 parts_cost REAL,
-                mileage INTEGER,
                 notes TEXT,
                 FOREIGN KEY (vehicle_id) 
                             REFERENCES vehicles(id)

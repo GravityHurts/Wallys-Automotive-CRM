@@ -63,7 +63,7 @@ class SearchTemplate(tk.Frame):
         self.treeview['columns'] = self.keys
 
         self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
-        #self.treeview.column("id", width=0, stretch=tk.NO) # hide the internal ID
+        self.treeview.column("id", width=0, stretch=tk.NO) # hide the internal ID
         
 
         for key in self.keys:

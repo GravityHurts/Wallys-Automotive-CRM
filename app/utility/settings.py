@@ -1,6 +1,12 @@
 import configparser
 import atexit
 import re
+from datetime import datetime
+
+DATE_FORMAT = '%Y-%m-%d'
+
+now = datetime.now()
+formatted_date = now.strftime(DATE_FORMAT)
 
 file_path = 'data/settings.ini'
 defaults = {
@@ -14,6 +20,10 @@ defaults = {
         'good standing': 'lightgreen',
         'moderate standing': 'lightyellow',
         'poor standing': 'lightred'
+    },
+    'dates': {
+        'last job creation': formatted_date,
+        'current index': '1'
     }
 }
 

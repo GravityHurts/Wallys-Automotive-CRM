@@ -1,8 +1,8 @@
 from . import sql
-
-from .config import DEFAULT_LABOR_HOURLY_RATE
 from .utils import convert_to_property_display
 from datetime import datetime
+
+from ..utility import settings
 
 COLUMN_INITIAL_WIDTH = 10
 
@@ -99,6 +99,9 @@ class Vehicle(DBObject):
         else:
             #self.id_string    = f"ID: {self.customer_id} - {firstname} {lastname}"
             self.id_string    = f"{self.firstname} {self.lastname}"
+
+        if (self.licence_number is None or self.licence_number == ''):
+            self.licence_number = 'OH-'
         
     def __str__(self):
         return f'{self.year} {self.make} {self.model} {self.vin}'
@@ -116,10 +119,15 @@ class Job(DBObject):
             self.id_string    = f"{self.year} {self.make} {self.model}"
 
         if len(kwargs.keys()) == 0:
-            self.labor_hourly_rate = DEFAULT_LABOR_HOURLY_RATE
+            self.labor_cost = 0
             self.parts_cost = 0
             self.labor_hours = 0
-            self.date_in = datetime.now().strftime("%m-%d-%Y")
+            self.date_completed = datetime.now().strftime(settings.DATE_FORMAT)
+            if settings.config['dates']['last job creation'] != self.date_completed:
+                settings.config['dates']['current index'] = '1'
+            
+            self.won = settings.config['dates']['current index']
+            self.work_order_number = f'{self.date_completed}-{self.won}'
 
     def save(self):
         try:
@@ -128,21 +136,18 @@ class Job(DBObject):
             raise ValueError(f"Error: {self.property_display['labor_hours']} is not a number")
             
         try:
-            float(self.labor_hourly_rate)
+            float(self.labor_cost)
         except ValueError:
-            raise ValueError(f"Error: {self.property_display['labor_hourly_rate']} is not a number")
+            raise ValueError(f"Error: {self.property_display['labor_cost']} is not a number")
 
         try:
             float(self.parts_cost)
         except ValueError:
             raise ValueError(f"Error: {self.property_display['parts_cost']} is not a number")
             
-        try:
-            datetime.strptime(self.date_in, '%m-%d-%Y')
-        except ValueError:
-            raise ValueError(f"Error: {self.property_display['date_in']} is not in the correct format (expected MM-DD-YYYY)")
-            
         super().save()
+        if self.won is not None:
+            settings.config['dates']['current index'] = str(int(settings.config['dates']['current index'])+1)
 
             
 
