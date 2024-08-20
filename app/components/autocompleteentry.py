@@ -1,5 +1,5 @@
 from tkinter import *
-import re
+from ..utility import settings
 
 class AutocompleteEntry(Entry):
     def __init__(self, lista, parent, *args, **kwargs):
@@ -23,7 +23,7 @@ class AutocompleteEntry(Entry):
         self.var.set(newVal)
         self.traceid = self.var.trace('w', self.changed)
         if self.selected is not None:
-            self.config(bg='lightgreen')
+            self.config(bg=settings.config['colors']['linked entry'])
 
     def changed(self, name, index, mode):
         self.selected = None
@@ -60,7 +60,7 @@ class AutocompleteEntry(Entry):
             selected = self.lista[selected]
             self.var.set(selected)
             self.selected = selected
-            self.config(bg='lightgreen')
+            self.config(bg=settings.config['colors']['linked entry'])
             self.lb.destroy()
             self.lb_up = False
             self.icursor(END)

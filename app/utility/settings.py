@@ -8,6 +8,12 @@ defaults = {
         'window title': "Wally's Automotive",
         'window size': '1280x720',
         'start fullscreen': True
+    },
+    'colors': {
+        'linked entry': 'lightblue',
+        'good standing': 'lightgreen',
+        'moderate standing': 'lightyellow',
+        'poor standing': 'lightred'
     }
 }
 
