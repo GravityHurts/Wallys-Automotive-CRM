@@ -6,7 +6,7 @@ file_path = 'data/settings.ini'
 defaults = {
     'application': {
         'window title': "Wally's Automotive",
-        'window size': '1920x1080',
+        'window size': '1280x720',
         'start fullscreen': True
     }
 }

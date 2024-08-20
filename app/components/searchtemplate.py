@@ -2,6 +2,7 @@
 from ..utility.sql import SQLConnection, FIELD_HEADER_NAMES
 from ..utility.types import COLUMN_INITIAL_WIDTH
 from .editwindow import EditEntity
+from .clearentry import ClearableEntry
 
 import math
 
@@ -34,27 +35,20 @@ class SearchTemplate(tk.Frame):
         #search_frame.pack(fill=tk.X, pady=10)
         search_frame.grid(row=0, column=0, sticky='ew')
 
-        search_label = tk.Label(search_frame, text="Search:")
-        search_label.pack(pady=10, padx=10, side=tk.LEFT)
+        # New item button
+        self.new_item_button = tk.Button(search_frame, text=f"New {self.params['name']}", command=self.edit_item)
+        self.new_item_button.pack(pady=10, padx=20, side=tk.LEFT)
 
         # Search Entry
-        self.search_entry = tk.Entry(search_frame)
+        self.search_entry = ClearableEntry(search_frame)
         self.search_entry.size()
         self.search_entry.pack(pady=10, padx=20, side=tk.LEFT, expand=True, fill=tk.X)
         #self.search_entry.bind("<KeyRelease>", self.load_entries)
         self.search_entry.bind("<Return>", self.load_entries)
 
-        # New item button
-        self.new_item_button = tk.Button(search_frame, text=f"New {self.params['name']}", command=self.edit_item)
-        self.new_item_button.pack(pady=10, padx=20, side=tk.RIGHT)
-
         # search button
         self.search_button = tk.Button(search_frame, text="Search", command=self.load_entries)
         self.search_button.pack(pady=10, padx=20, side=tk.RIGHT)
-
-        # clear button
-        self.clear_button = tk.Button(search_frame, text="Clear", command=self.clear_search)
-        self.clear_button.pack(pady=10, padx=10, side=tk.RIGHT)
 
         # Treeview
         self.treeview = ttk.Treeview(self)
