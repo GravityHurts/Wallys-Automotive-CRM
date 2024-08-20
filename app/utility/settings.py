@@ -13,7 +13,9 @@ defaults = {
     'application': {
         'window title': "Wally's Automotive",
         'window size': '1280x720',
-        'start fullscreen': True
+        'start fullscreen': True,
+        'default column width': 80,
+        'stretch columns': 'notes,repairs'
     },
     'colors': {
         'linked entry': 'lightblue',

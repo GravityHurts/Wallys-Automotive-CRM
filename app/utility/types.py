@@ -4,8 +4,6 @@ from datetime import datetime
 
 from ..utility import settings
 
-COLUMN_INITIAL_WIDTH = 10
-
 class DBObject:
     """
     Represents a database object with common functionalities for interacting with database tables.

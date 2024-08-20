@@ -1,6 +1,7 @@
 
 from ..utility.sql import SQLConnection, FIELD_HEADER_NAMES
-from ..utility.types import COLUMN_INITIAL_WIDTH
+from ..utility.config import FIELD_HEADER_WIDTHS, DEFAULT_WIDTH
+from ..utility import settings
 from .editwindow import EditEntity
 from .clearentry import ClearableEntry
 
@@ -8,6 +9,8 @@ import math
 
 import tkinter as tk
 from tkinter import ttk
+
+COLUMN_INITIAL_WIDTH = 10
 
 sql = SQLConnection()
 
@@ -23,6 +26,8 @@ class SearchTemplate(tk.Frame):
             "column": "",
             "method": "NONE"
         }
+
+        exclusions = ['#0', 'id']
 
         self.entries_per_page = entries_per_page
         self.page_number = 1
@@ -60,14 +65,14 @@ class SearchTemplate(tk.Frame):
         self.treeview.bind("<Double-1>", self.on_select)
         self.treeview.bind("<Button-3>", self.on_right_click)
         self.keys = list(sql.get_table_info(self.params['dbname']).keys())
+        self.keys = [x for x in self.keys if x not in exclusions]
         self.treeview['columns'] = self.keys
 
         self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
-        self.treeview.column("id", width=0, stretch=tk.NO) # hide the internal ID
-        
 
+        stretchKeys = [x.strip() for x in settings.config['application']['stretch columns'].split(',')]
         for key in self.keys:
-            self.treeview.column(key, anchor=tk.W, width=COLUMN_INITIAL_WIDTH)
+            self.treeview.column(key, anchor=tk.W, width=FIELD_HEADER_WIDTHS.get(key, DEFAULT_WIDTH), stretch=key in stretchKeys and tk.YES or tk.NO)
             self.treeview.heading(key, text=FIELD_HEADER_NAMES[key])
 
         # left/right buttons for "paging"
@@ -196,7 +201,7 @@ class SearchTemplate(tk.Frame):
         
         counter=0
         for entry in self.entries:
-            self.treeview.insert("", tk.END, values=entry.to_tuple(), iid=counter)  
+            self.treeview.insert("", tk.END, values=entry.to_tuple()[1:], iid=counter)  
             counter += 1
             
     def edit_item(self, entry=None):
