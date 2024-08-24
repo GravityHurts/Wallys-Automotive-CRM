@@ -1,4 +1,5 @@
 
+import time
 from ..utility.sql import SQLConnection, FIELD_HEADER_NAMES
 from ..utility.config import FIELD_HEADER_WIDTHS, DEFAULT_WIDTH
 from ..utility import settings
@@ -21,6 +22,7 @@ class SearchTemplate(tk.Frame):
         self.params = params
         self.count = 0
         self.after_id = None
+        self.initial_load = True
         self.header_size = 25
         self.sort_type = {
             "column": "",
@@ -173,23 +175,34 @@ class SearchTemplate(tk.Frame):
         
         if self.after_id:
             self.after_cancel(self.after_id)
-        self.after_id = self.after(800, self.update_resize)  # 500ms delay
+        
+        delay = 800
+        if self.initial_load:
+            delay = 10
+            self.initial_load = False
+
+        self.after_id = self.after(delay, self.update_resize)  # 500ms delay
         #print("load", event)
 
     #@debounce(wait_time=1)
     def load_entries(self, *args):
         if self.isLoading == False:
             self.isLoading = True
-            search_text = self.search_entry.get()#.lower()
-            #self.entries = [entry for entry in self.entries if search_text in entry.lower()]
-            entries = self.get_function("search", obj=sql)(text=search_text, page=self.page_number, page_size=self.entries_per_page, sort=self.sort_type)
-            
-            self.entries = entries['entries']
-            self.count = entries['count']
+            self.parent.parent.show_loading_overlay()
+            def t():
+                search_text = self.search_entry.get()#.lower()
+                #self.entries = [entry for entry in self.entries if search_text in entry.lower()]
+                entries = self.get_function("search", obj=sql)(text=search_text, page=self.page_number, page_size=self.entries_per_page, sort=self.sort_type)
+                
+                self.entries = entries['entries']
+                self.count = entries['count']
 
-            self.update_treeview()
+                self.update_treeview()
 
-            self.isLoading = False
+                self.isLoading = False
+                self.parent.parent.hide_loading_overlay()
+            # this is so I can add an artificial "load time" for testing 
+            self.after(0, t)
 
     def clear_search(self):
         self.search_entry.delete(0, tk.END)
