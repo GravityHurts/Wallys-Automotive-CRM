@@ -1,7 +1,7 @@
 
 import time
 from ..utility.sql import SQLConnection, FIELD_HEADER_NAMES
-from ..utility.config import FIELD_HEADER_WIDTHS, DEFAULT_WIDTH
+from ..utility.config import DEFAULT_WIDTH
 from ..utility import settings
 from .editwindow import EditEntity
 from .clearentry import ClearableEntry
@@ -74,7 +74,7 @@ class SearchTemplate(tk.Frame):
 
         stretchKeys = [x.strip() for x in settings.config['application']['stretch columns'].split(',')]
         for key in self.keys:
-            self.treeview.column(key, anchor=tk.W, width=FIELD_HEADER_WIDTHS.get(key, DEFAULT_WIDTH), stretch=key in stretchKeys and tk.YES or tk.NO)
+            self.treeview.column(key, anchor=tk.W, width=settings.config['column widths'].get(key, DEFAULT_WIDTH), stretch=key in stretchKeys and tk.YES or tk.NO)
             self.treeview.heading(key, text=FIELD_HEADER_NAMES[key])
 
         # left/right buttons for "paging"
@@ -146,8 +146,8 @@ class SearchTemplate(tk.Frame):
             self.page_label.config(text=f"Page {self.page_number}")
 
     def start_timer(self, event):
-        col = self.treeview.identify_column(event.x)
-        if col:
+        self.click_start_col = self.treeview.identify_column(event.x)
+        if self.click_start_col:
             self.timer_started = True
             self.parent.after(200, self.set_timer_flag_to_false)
 
@@ -158,6 +158,8 @@ class SearchTemplate(tk.Frame):
         col = self.treeview.identify_column(event.x)
         if col and self.timer_started:
             self.on_click(event)
+        else:
+            self.on_column_resize(event)
 
     def get_function(self, starting_name, obj=None):
         key = 'dbname'
@@ -288,6 +290,17 @@ class SearchTemplate(tk.Frame):
         setattr(self.treeview, f"{col}_sorted", s)
         self.update_headers()
         self.load_entries()
+
+    def on_column_resize(self, event):
+        col_id = self.click_start_col
+        if not col_id:
+            col_id = event.widget.identify_column(event.x)
+        col_num = int(col_id[1:])-1
+        if (col_num >= 0):
+            new_width = event.widget.column(col_id, 'width')
+            col_name = self.keys[col_num]
+            settings.config['column widths'][col_name] = new_width
+            print(f"Column {col_id} - {col_name} - resized to width {new_width}")
 
     def on_click(self, event):
         if event.y < self.header_size: # header click

@@ -2,6 +2,7 @@ import configparser
 import atexit
 import re
 from datetime import datetime
+from . import config
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -14,7 +15,6 @@ defaults = {
         'window title': "Wally's Automotive",
         'window size': '1280x720',
         'start fullscreen': True,
-        'default column width': 80,
         'stretch columns': 'notes,repairs'
     },
     'colors': {
@@ -26,7 +26,8 @@ defaults = {
     'dates': {
         'last job creation': formatted_date,
         'current index': '1'
-    }
+    },
+    'column widths': config.DEFAULT_FIELD_HEADER_WIDTHS
 }
 
 def validate_settings():

@@ -1,4 +1,4 @@
-from . import settings
+
 
 FIELD_HEADER_NAMES = {
     'customer_id': 'Customer',
@@ -27,8 +27,8 @@ FIELD_HEADER_NAMES = {
     'work_order_number': 'Work Order #'
 }
 
-DEFAULT_WIDTH = int(settings.config['application']['default column width'])
-FIELD_HEADER_WIDTHS = {
+DEFAULT_WIDTH = 80
+DEFAULT_FIELD_HEADER_WIDTHS = {
     'customer_id':       int(DEFAULT_WIDTH * 2.25),
     'vehicle_id':        int(DEFAULT_WIDTH * 2.25),
     'firstname':         int(DEFAULT_WIDTH * 1.3),

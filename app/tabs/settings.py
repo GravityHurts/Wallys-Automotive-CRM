@@ -1,5 +1,6 @@
 import tkinter as tk
 from ..utility import settings
+from ..components.scrollableframe import ScrollFrame
 from typing import Any
 
 class Settings(tk.Frame):
@@ -9,8 +10,18 @@ class Settings(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
+        self.scrollFrame = ScrollFrame(self)
+        
+        f = tk.Frame(self.scrollFrame.viewPort)
+        save_button = tk.Button(f, text="Save", command=settings.save_settings)
+        def l():
+            a=0
+            for x in settings.config.items():
+                a += len(x)
+            return a*80
+        save_button.pack(side='right', padx=10, pady=(0,l()))
         for section, items in settings.config.items():  # Iterate over sections and their contents
-            frame = tk.Frame(self)
+            frame = tk.Frame(f)
             frame.pack()
             section_title = tk.Label(frame, text=section.title(), font=("Helvetica", 12, "bold"))
             section_title.grid(row=0, column=0, sticky='w')
@@ -25,10 +36,9 @@ class Settings(tk.Frame):
                     # For non-checkbutton widgets, ensure the command is set correctly if needed in subclasses
                     pass
                 widget.grid(row=idx + 1, column=2)
-
-        save_button = tk.Button(self, text="Save", command=settings.save_settings)
-        save_button.pack()
         
+        f.pack(side='left')
+        self.scrollFrame.pack(expand=True)
 
     def create_setting_var(self, value: Any):
         if isinstance(value, bool):
