@@ -80,8 +80,7 @@ class Customer(DBObject):
         super().__init__('customers', **kwargs)
 
     def __str__(self):
-        #return f'ID: {self.id} - {self.firstname} {self.lastname} {self.phone}'
-        return f'{self.firstname} {self.lastname} {self.phone}'
+        return f'{self.fullname} {self.phone}'
     
 class Vehicle(DBObject):
     def __init__(self, **kwargs):
@@ -90,13 +89,11 @@ class Vehicle(DBObject):
         if (self.customer_id == 'NULL'):
             self.customer_id = ''
         
-        self.firstname = getattr(self, 'firstname', '') or ''
-        self.lastname = getattr(self, 'lastname', '') or ''
-        if (self.firstname+self.lastname == ''):
+        self.fullname = getattr(self, 'fullname', '') or ''
+        if (self.fullname == ''):
             self.id_string = "No Customer"
         else:
-            #self.id_string    = f"ID: {self.customer_id} - {firstname} {lastname}"
-            self.id_string    = f"{self.firstname} {self.lastname}"
+            self.id_string    = self.fullname
 
         if (self.licence_number is None or self.licence_number == ''):
             self.licence_number = 'OH-'

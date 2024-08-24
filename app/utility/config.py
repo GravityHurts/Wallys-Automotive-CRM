@@ -3,8 +3,7 @@
 FIELD_HEADER_NAMES = {
     'customer_id': 'Customer',
     'vehicle_id': 'Vehicle',
-    'firstname': 'First Name',
-    'lastname': 'Last Name',
+    'fullname': 'Full Name',
     'email': 'E-Mail',
     'phone': 'Phone',
     'street_address': 'Street Address',
@@ -31,8 +30,7 @@ DEFAULT_WIDTH = 80
 DEFAULT_FIELD_HEADER_WIDTHS = {
     'customer_id':       int(DEFAULT_WIDTH * 2.25),
     'vehicle_id':        int(DEFAULT_WIDTH * 2.25),
-    'firstname':         int(DEFAULT_WIDTH * 1.3),
-    'lastname':          int(DEFAULT_WIDTH * 1.3),
+    'fullname':         int(DEFAULT_WIDTH * 2.3),
     'email':             int(DEFAULT_WIDTH * 2.0),
     'phone':             int(DEFAULT_WIDTH * 1.125),
     'street_address':    int(DEFAULT_WIDTH * 2.25),

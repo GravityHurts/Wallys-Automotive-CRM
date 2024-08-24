@@ -144,8 +144,7 @@ class Database:
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS customers (
                 id INTEGER PRIMARY KEY,
-                firstname TEXT,
-                lastname TEXT,
+                fullname TEXT,
                 email TEXT,
                 phone TEXT,
                 street_address TEXT,
@@ -176,7 +175,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS jobs (
                 id INTEGER PRIMARY KEY,
                 vehicle_id INTEGER,
-                work_order_id TEXT,
+                work_order_number TEXT,
                 date_completed TEXT,
                 mileage INTEGER,
                 repairs TEXT,
@@ -254,7 +253,7 @@ class SQLConnection:
         offset = (page-1) * 1 # the offset value of what "page" we're on
 
         keys = self.db.get_table_info('customers').keys()
-        keys2 = ['customers.firstname', 'customers.lastname']
+        keys2 = ['customers.fullname']
         search = ""
         pquery = None
         if text.strip() != "":
@@ -272,11 +271,11 @@ class SQLConnection:
         offset = (page-1) * page_size  # the offset value of what "page" we're on
         (id, text) = self.extract_id("customer", text)
 
-        select = 'vehicles.*, customers.firstname, customers.lastname'
+        select = 'vehicles.*, customers.fullname'
         left_join = 'customers ON customers.id = vehicles.customer_id'
 
         keys = ['vehicles.'+key for key in self.db.get_table_info('vehicles').keys()]
-        keys2 = ['customers.firstname', 'customers.lastname']
+        keys2 = ['customers.fullname']
         keys += keys2
         search = ""
         pquery = None
@@ -305,7 +304,7 @@ class SQLConnection:
         left_join = ['vehicles ON vehicles.id = jobs.vehicle_id', 'customers ON customers.id = vehicles.customer_id']
 
         keys = ['jobs.'+key for key in self.db.get_table_info('jobs').keys()]
-        keys2 = ['customers.firstname', 'customers.lastname', 'vehicles.year', 'vehicles.make', 'vehicles.model']
+        keys2 = ['customers.fullname', 'vehicles.year', 'vehicles.make', 'vehicles.model']
         keys += keys2
         search = ""
         pquery = None
