@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import font
+
 
 import time
 
@@ -15,28 +17,32 @@ class MainWindow(tk.Frame):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
+        win_font = font.nametofont("TkDefaultFont")  # Get default font value into Font object
+        line_height = win_font.metrics()['linespace']  # returns an integer
         # self.toolbar = Toolbar(self)
         # self.toolbar.pack(side="top", fill="x")
 
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(padx=4, pady=4, expand=True, fill='both')
         self.notebook.parent = self
+        style = ttk.Style(self.notebook)
+        style.configure('Treeview', font=win_font, rowheight=line_height)
         
         # Create loading overlay
         self.create_loading_overlay()
 
         # Customers tab
-        self.customersearch = CustomerSearch(self.notebook)
+        self.customersearch = CustomerSearch(self.notebook, line_height=line_height)
         self.customersearch.pack(expand=True, fill='both')
         self.notebook.add(self.customersearch, text="Customers")
 
         # Vehicles tab
-        self.vehiclesearch = VehicleSearch(self.notebook)
+        self.vehiclesearch = VehicleSearch(self.notebook, line_height=line_height)
         self.vehiclesearch.pack(expand=True, fill='both')
         self.notebook.add(self.vehiclesearch, text="Vehicles")
 
         # Jobs tab
-        self.jobsearch = JobSearch(self.notebook)
+        self.jobsearch = JobSearch(self.notebook, line_height=line_height)
         self.jobsearch.pack(expand=True, fill='both')
         self.notebook.add(self.jobsearch, text="Jobs")
 

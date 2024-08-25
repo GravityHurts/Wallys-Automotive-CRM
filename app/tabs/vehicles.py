@@ -1,8 +1,8 @@
 from ..components.searchtemplate import *
 
 class VehicleSearch(SearchTemplate):
-    def __init__(self, parent):
-        super().__init__(parent, {"name": "Vehicle","dbname": "vehicles"})
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, {"name": "Vehicle","dbname": "vehicles"}, *args, **kwargs)
         self.init_context_menu({
             "Customer details": self.show_customer,
             "Show all Jobs for this Vehicle": self.show_all_jobs

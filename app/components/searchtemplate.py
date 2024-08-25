@@ -16,10 +16,11 @@ COLUMN_INITIAL_WIDTH = 10
 sql = SQLConnection()
 
 class SearchTemplate(tk.Frame):
-    def __init__(self, parent, params, entries_per_page=20):
+    def __init__(self, parent, params, entries_per_page=20, line_height=20):
         super().__init__(parent)
         self.parent = parent
         self.params = params
+        self.line_height=line_height
         self.count = 0
         self.after_id = None
         self.initial_load = True
@@ -47,11 +48,12 @@ class SearchTemplate(tk.Frame):
         self.new_item_button.pack(pady=10, padx=20, side=tk.LEFT)
 
         # Search Entry
-        self.search_entry = ClearableEntry(search_frame, takefocus=True)
+        self.search_entry = ClearableEntry(search_frame, clear_action=self.clear_search, takefocus=True)
         self.search_entry.size()
         self.search_entry.pack(pady=10, padx=20, side=tk.LEFT, expand=True, fill=tk.X)
         #self.search_entry.bind("<KeyRelease>", self.load_entries)
         self.search_entry.bind("<Return>", self.load_entries)
+        #self.search_entry.clear_button.bind('<Button-1>', self.clear_search)
 
         # search button
         self.search_button = tk.Button(search_frame, text="Search", command=self.load_entries)
@@ -69,6 +71,8 @@ class SearchTemplate(tk.Frame):
         self.keys = list(sql.get_table_info(self.params['dbname']).keys())
         self.keys = [x for x in self.keys if x not in exclusions]
         self.treeview['columns'] = self.keys
+        self.treeview.tag_configure('oddrow', background='#F0F0F0')
+        self.treeview.tag_configure('evenrow', background='#FFFFFF')
 
         self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
 
@@ -111,7 +115,7 @@ class SearchTemplate(tk.Frame):
 
     def update_resize(self):
         height = self.winfo_height()
-        max_entries = (height - 112) // 20
+        max_entries = (height - 112) // (self.line_height)
         self.entries_per_page = math.floor(max_entries)
         if ((self.count / self.entries_per_page) <= 1):
             self.page_number = 1
@@ -158,7 +162,7 @@ class SearchTemplate(tk.Frame):
         col = self.treeview.identify_column(event.x)
         if col and self.timer_started:
             self.on_click(event)
-        else:
+        elif event.y < self.header_size:
             self.on_column_resize(event)
 
     def get_function(self, starting_name, obj=None):
@@ -216,7 +220,7 @@ class SearchTemplate(tk.Frame):
         
         counter=0
         for entry in self.entries:
-            self.treeview.insert("", tk.END, values=entry.to_tuple()[1:], iid=counter)  
+            self.treeview.insert("", tk.END, values=entry.to_tuple()[1:], iid=counter, tags=(counter%2==0 and 'evenrow' or 'oddrow'))  
             counter += 1
             
     def edit_item(self, entry=None):

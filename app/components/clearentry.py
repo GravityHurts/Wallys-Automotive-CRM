@@ -2,6 +2,7 @@ import tkinter as tk
 
 class ClearableEntry(tk.Frame):
     def __init__(self, parent=None, *args, **kwargs):
+        self._clear_action = kwargs.pop('clear_action', None)
         super().__init__(parent, *args, **kwargs)
 
         # magic to recreate a tk.entry border
@@ -16,7 +17,7 @@ class ClearableEntry(tk.Frame):
         self.clear_button.grid(row=0, column=1, sticky="nsew", padx=(0, 1), pady=(1, 1))
         self.border_frame.grid_columnconfigure(0, weight=1)
         self.border_frame.grid_rowconfigure(0, weight=1)
-        self.clear_button.bind('<Button-1>', self._clear_text)
+        self.clear_button.bind('<Button-1>', self.__clear_action)
         self.clear_button.bind('<Enter>', self._on_hover)
         self.clear_button.bind('<Leave>', self._on_leave)
 
@@ -34,8 +35,10 @@ class ClearableEntry(tk.Frame):
         self.selection_clear = self.entry.selection_clear
 
 
-    def _clear_text(self, event=None):
+    def __clear_action(self, event=None):
         self.entry.delete(0, tk.END)
+        if self._clear_action is not None:
+            self._clear_action()
 
     def _on_hover(self, event=None):
         self.clear_button.config(bg='lightgrey')

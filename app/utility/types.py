@@ -99,7 +99,7 @@ class Vehicle(DBObject):
             self.licence_number = 'OH-'
         
     def __str__(self):
-        return f'{self.year} {self.make} {self.model} {self.vin}'
+        return f'{self.year} {self.make} {self.model} {self.licence_number}'
 
 class Job(DBObject):
     def __init__(self, **kwargs):
@@ -108,10 +108,11 @@ class Job(DBObject):
         self.year = getattr(self, 'year', '') or ''
         self.make = getattr(self, 'make', '') or ''
         self.model = getattr(self, 'model', '') or ''
-        if ((str(self.year)+str(self.make)+str(self.model)) == ''):
+        self.licence_number = getattr(self, 'licence_number', '') or ''
+        if ((str(self.year)+str(self.make)+str(self.model)+str(self.licence_number)) == ''):
             self.id_string = "No Vehicle??"
         else:
-            self.id_string    = f"{self.year} {self.make} {self.model}"
+            self.id_string    = f"'{self.licence_number}' {self.year} {self.make} {self.model}"
 
         if len(kwargs.keys()) == 0:
             self.labor_cost = 0

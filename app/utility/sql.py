@@ -244,6 +244,10 @@ class SQLConnection:
             #print(f"{name} No ID number found.")
             return (None, text)
 
+    def splitQ(self, text, col):
+        return ' OR '.join([f"{col} LIKE '%{t}%'" for t in text.split(' ')] + [f"{col} LIKE '%{text}%'"])
+        #return f"{col} LIKE '%{text}%'"
+
     # CUSTOMER QUERIES
     def id_customer(self, id):
         if id == '': return None
@@ -253,13 +257,14 @@ class SQLConnection:
         offset = (page-1) * 1 # the offset value of what "page" we're on
 
         keys = self.db.get_table_info('customers').keys()
-        keys2 = ['customers.fullname']
+        priority_keys = ['fullname']
         search = ""
         pquery = None
         if text.strip() != "":
-            search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
-            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
-        
+            search = ' OR '.join([self.splitQ(text, col) for col in keys])
+            #search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
+            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(priority_keys)]) + f' ELSE {len(priority_keys)+1} END '
+            print(pquery)
         return self.db.search_rows('customers', search_query=search, offset=offset, page_size=page_size, sort=sort, priority_query=pquery)
 
     # VEHICLE QUERIES
@@ -274,14 +279,15 @@ class SQLConnection:
         select = 'vehicles.*, customers.fullname'
         left_join = 'customers ON customers.id = vehicles.customer_id'
 
-        keys = ['vehicles.'+key for key in self.db.get_table_info('vehicles').keys()]
-        keys2 = ['customers.fullname']
-        keys += keys2
+        extra_keys = ['customers.fullname']
+        keys = ['vehicles.'+key for key in self.db.get_table_info('vehicles').keys()] 
+        keys += extra_keys
+        priority_keys = ['customers.fullname', 'customers.phone', 'vin', 'licence_number']
         search = ""
         pquery = None
         if text.strip() != "":
-            search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
-            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
+            search = ' OR '.join([self.splitQ(text, col) for col in keys])
+            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(priority_keys)]) + f' ELSE {len(priority_keys)+1} END '
 
         if id is not None:
             if (search.strip() != ""):
@@ -300,17 +306,18 @@ class SQLConnection:
         (v_id, text) = self.extract_id("vehicle", text)
         (c_id, text) = self.extract_id("customer", text)
 
-        select = 'jobs.*, vehicles.year, vehicles.make, vehicles.model'
+        select = 'jobs.*, vehicles.year, vehicles.make, vehicles.model, vehicles.vin, vehicles.licence_number'
         left_join = ['vehicles ON vehicles.id = jobs.vehicle_id', 'customers ON customers.id = vehicles.customer_id']
 
         keys = ['jobs.'+key for key in self.db.get_table_info('jobs').keys()]
-        keys2 = ['customers.fullname', 'vehicles.year', 'vehicles.make', 'vehicles.model']
-        keys += keys2
+        extra_keys = ['customers.fullname', 'vehicles.year', 'vehicles.make', 'vehicles.model', 'vehicles.vin', 'vehicles.licence_number']
+        priority_keys = ['work_order_number', 'customers.fullname', 'customers.phone', 'vehicles.licence_number', 'vehicles.vin']
+        keys += extra_keys
         search = ""
         pquery = None
         if text.strip() != "":
-            search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
-            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(keys2)]) + ' END '
+            search = ' OR '.join([self.splitQ(text, col) for col in keys])
+            pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(priority_keys)]) + f' ELSE {len(priority_keys)+1} END '
         
         if v_id is not None:
             if (search.strip() != ""):
