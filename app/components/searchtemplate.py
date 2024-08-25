@@ -225,6 +225,7 @@ class SearchTemplate(tk.Frame):
             
     def edit_item(self, entry=None):
         new_window = tk.Toplevel(self)
+        new_window.parent = self
         new_window.title(f"{self.params['name']} Info")
         ec = EditEntity(new_window, self.params['name'], entry, self.load_entries).pack(expand=True, fill=tk.BOTH)
 

@@ -85,7 +85,7 @@ class EditEntity(tk.Frame):
 
                 entry = IDSuggestEntry(self, property_name.split('_')[0], textvariable=var)
                 entry.grid(row=row, column=1, sticky="ew", columnspan=3) 
-            elif property_name.lower() == 'fullname' and self.ctype == 'customer':
+            elif self.new_entity and property_name.lower() == 'fullname' and self.ctype == 'customer':
                 label = tk.Label(self, text=label_text + ":")
                 label.grid(row=row, column=0, sticky="e")
 
@@ -106,6 +106,24 @@ class EditEntity(tk.Frame):
         # Save Button
         self.save_button = tk.Button(self, text="Save", command=self.save_info)
         self.save_button.grid(row=row, column=1, pady=10, padx=10)
+
+        if not self.new_entity and self.ctype == 'customer':
+            def sav():
+                if self.close_window():
+                    self.parent.parent.show_all_vehicles()
+            def saj():
+                if self.close_window():
+                    self.parent.parent.show_all_jobs()
+            self.show_vehicle_list = tk.Button(self, text="Show Vehicle List", command=sav)
+            self.show_job_list = tk.Button(self, text="Show Job List", command=saj)
+            self.show_vehicle_list.grid(row=row, column=2, pady=10, padx=10, sticky='w')
+            self.show_job_list.grid(row=row, column=2, pady=10, padx=10, sticky='e')
+        elif not self.new_entity and self.ctype == 'vehicle':
+            def saj():
+                if self.close_window():
+                    self.parent.parent.show_all_jobs()
+            self.show_job_list = tk.Button(self, text="Show Job List", command=saj)
+            self.show_job_list.grid(row=row, column=2, pady=10, padx=10)
 
         # Cancel Button
         self.cancel_button = tk.Button(self, text="Cancel", command=self.close_window)
@@ -154,11 +172,13 @@ class EditEntity(tk.Frame):
 
             if result:
                 self.close()
+                return True
             else:
                 # User canceled closing without saving
                 self.focus()
         else:  # no unsaved changes
             self.close()
+            return True
 
     def close(self):
         self.parent.destroy()
