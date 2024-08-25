@@ -78,7 +78,7 @@ class SearchTemplate(tk.Frame):
 
         stretchKeys = [x.strip() for x in settings.config['application']['stretch columns'].split(',')]
         for key in self.keys:
-            if key == 'status': continue
+            #if key == 'status': continue
             self.treeview.column(key, anchor=tk.W, width=settings.config['column widths'].get(key, DEFAULT_WIDTH), stretch=key in stretchKeys and tk.YES or tk.NO)
             self.treeview.heading(key, text=FIELD_HEADER_NAMES[key])
 
@@ -115,6 +115,8 @@ class SearchTemplate(tk.Frame):
         #self.load_entries() 
 
     def set_colors(self):
+        self.treeview.tag_configure('odd', background='#FFFFFF')
+        self.treeview.tag_configure('even', background='#F0F0F0')
         self.treeview.tag_configure('good-odd', background=settings.config['colors']['good standing'])
         self.treeview.tag_configure('good-even', background=utils.darken_hex_color(settings.config['colors']['good standing']))
         self.treeview.tag_configure('moderate-odd', background=settings.config['colors']['moderate standing'])
@@ -235,6 +237,9 @@ class SearchTemplate(tk.Frame):
             if settings.config['colors']['colorful lists'] and hasattr(entry,'status'):
                 oddeven = counter%2 == 0 and 'even' or 'odd'
                 tags = (f'{entry.status}-{oddeven}',)
+            else:
+                oddeven = counter%2 == 0 and 'even' or 'odd'
+                tags = (oddeven,)
             self.treeview.insert("", tk.END, values=entry.to_tuple()[1:], iid=counter, tags=tags)  
             counter += 1
             
