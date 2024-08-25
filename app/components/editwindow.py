@@ -85,6 +85,12 @@ class EditEntity(tk.Frame):
 
                 entry = IDSuggestEntry(self, property_name.split('_')[0], textvariable=var)
                 entry.grid(row=row, column=1, sticky="ew", columnspan=3) 
+            elif property_name.lower() == 'fullname' and self.ctype == 'customer':
+                label = tk.Label(self, text=label_text + ":")
+                label.grid(row=row, column=0, sticky="e")
+
+                entry = IDSuggestEntry(self, 'customer', textvariable=var, allow_selection=False)
+                entry.grid(row=row, column=1, sticky="ew", columnspan=3) 
             else:
                 label = tk.Label(self, text=label_text + ":")
                 label.grid(row=row, column=0, sticky="e")

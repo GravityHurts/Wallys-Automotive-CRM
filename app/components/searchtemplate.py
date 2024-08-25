@@ -304,7 +304,7 @@ class SearchTemplate(tk.Frame):
             new_width = event.widget.column(col_id, 'width')
             col_name = self.keys[col_num]
             settings.config['column widths'][col_name] = new_width
-            print(f"Column {col_id} - {col_name} - resized to width {new_width}")
+            #print(f"Column {col_id} - {col_name} - resized to width {new_width}")
 
     def on_click(self, event):
         if event.y < self.header_size: # header click

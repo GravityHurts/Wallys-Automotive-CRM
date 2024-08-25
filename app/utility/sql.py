@@ -264,7 +264,7 @@ class SQLConnection:
             search = ' OR '.join([self.splitQ(text, col) for col in keys])
             #search = ' OR '.join([f"{col} LIKE '%{text}%'" for col in keys]) 
             pquery = 'CASE ' + ' '.join([f"WHEN {col} LIKE '%{text}%' THEN {idx+1}" for idx, col in enumerate(priority_keys)]) + f' ELSE {len(priority_keys)+1} END '
-            print(pquery)
+            #print(pquery)
         return self.db.search_rows('customers', search_query=search, offset=offset, page_size=page_size, sort=sort, priority_query=pquery)
 
     # VEHICLE QUERIES

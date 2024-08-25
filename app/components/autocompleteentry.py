@@ -3,11 +3,11 @@ from ..utility import settings
 
 class AutocompleteEntry(Entry):
     def __init__(self, lista, parent, *args, **kwargs):
-        
+        self.allow_selection = kwargs.pop('allow_selection', True)
         Entry.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
-        self.lista = lista        
+        self.lista = lista       
         self.var = kwargs["textvariable"]
 
         self.traceid = self.var.trace('w', self.changed)
@@ -54,7 +54,7 @@ class AutocompleteEntry(Entry):
                     self.lb_up = False
         
     def selection(self, event):
-        if self.lb_up:
+        if self.lb_up and self.allow_selection:
             #selected = self.lb.get(ACTIVE)
             selected = self.lb.curselection()[0]
             selected = self.lista[selected]
