@@ -78,6 +78,8 @@ class DBObject:
 class Customer(DBObject):
     def __init__(self, **kwargs):
         super().__init__('customers', **kwargs)
+        if not hasattr(self,'status') or self.status == '' or self.status == None:
+            self.status = 'neutral' 
 
     def __str__(self):
         return f'{self.fullname} {self.phone}'
@@ -99,11 +101,20 @@ class Vehicle(DBObject):
             self.licence_number = 'OH-'
         
     def __str__(self):
-        return f'{self.year} {self.make} {self.model} {self.licence_number}'
+        return f"{self.id_string}: {self.year} {self.make} {self.model} - '{self.licence_number}'"
 
 class Job(DBObject):
     def __init__(self, **kwargs):
         super().__init__('jobs', **kwargs)
+        
+        if (hasattr(self, 'customer_id') and self.customer_id == 'NULL'):
+            self.customer_id = ''
+        
+        self.fullname = getattr(self, 'fullname', '') or ''
+        if (self.fullname == ''):
+            self.c_id_string = "No Customer"
+        else:
+            self.c_id_string    = self.fullname
 
         self.year = getattr(self, 'year', '') or ''
         self.make = getattr(self, 'make', '') or ''
@@ -112,9 +123,10 @@ class Job(DBObject):
         if ((str(self.year)+str(self.make)+str(self.model)+str(self.licence_number)) == ''):
             self.id_string = "No Vehicle??"
         else:
-            self.id_string    = f"'{self.licence_number}' {self.year} {self.make} {self.model}"
+            self.id_string    = f"{self.c_id_string}: {self.year} {self.make} {self.model} - '{self.licence_number}'"
 
-        if len(kwargs.keys()) == 0:
+        if not hasattr(self, 'work_order_number') or self.work_order_number == '':
+            print("HERE")
             self.labor_cost = 0
             self.parts_cost = 0
             self.labor_hours = 0
@@ -142,7 +154,7 @@ class Job(DBObject):
             raise ValueError(f"Error: {self.property_display['parts_cost']} is not a number")
             
         super().save()
-        if self.won is not None:
+        if hasattr(self, 'won') and self.won is not None:
             settings.config['dates']['current index'] = str(int(settings.config['dates']['current index'])+1)
 
             

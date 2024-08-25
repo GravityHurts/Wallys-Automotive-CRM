@@ -6,6 +6,9 @@ from .config import FIELD_HEADER_NAMES
 
 DB_NAME = "data/mechanic_app.db"
 
+def escape_string(value):
+    return sqlite3.Connection(':memory:').execute('SELECT ?;', (value,)).fetchone()[0]
+
 @singleton
 class Database:
     """
@@ -75,8 +78,17 @@ class Database:
         self.cursor.execute(sql_query, (id,))
         self.conn.commit()
 
-    def read_row(self, table_name, id):
-        sql_query = f"SELECT * FROM {table_name} WHERE id=?"
+    def read_row(self, table_name, id, select='*', left_join=[]):
+        sql_query = f"SELECT {select} FROM {table_name} "
+        if (type(left_join) == str):
+            left_join = [left_join]
+            
+        if len(left_join) > 0:
+            for lj in left_join:
+                sql_query += f"LEFT JOIN {lj} "
+        
+        sql_query += f"WHERE {table_name}.id=?"
+
         self.cursor.execute(sql_query, (id,))
         row = self.cursor.fetchone()
         if row:
@@ -151,6 +163,7 @@ class Database:
                 city_address TEXT,
                 state_address TEXT,
                 zip_address TEXT,
+                status TEXT,
                 notes TEXT
             )
         ''')
@@ -233,7 +246,7 @@ class SQLConnection:
         self.get_table_info = self.db.get_table_info
 
     def extract_id(self, name, text):
-        pattern = rf"<<\s*{name}:\s*(\d+)\s*>>"
+        pattern = rf"<<\s*{name}:\s*(\d+|NULL)\s*>>"
         match = re.search(pattern, text)
         if match:
             id_number = match.group(1)
@@ -254,6 +267,8 @@ class SQLConnection:
         return self.db.read_row('customers', id)
 
     def search_customers(self, text="", page=1, page_size=25, sort=None):
+        if text.strip() != '':
+            text = escape_string(text).lower()
         offset = (page-1) * 1 # the offset value of what "page" we're on
 
         keys = self.db.get_table_info('customers').keys()
@@ -270,19 +285,23 @@ class SQLConnection:
     # VEHICLE QUERIES
     def id_vehicle(self, id):
         if id == '': return None
-        return self.db.read_row('vehicles', id)
+        select = 'vehicles.*, customers.status, customers.fullname'
+        lj = ['customers ON customers.id = vehicles.customer_id']
+        return self.db.read_row('vehicles', id, select=select, left_join=lj)
 
     def search_vehicles(self, text="", page=1, page_size=25, sort=None):
+        if text.strip() != '':
+            text = escape_string(text).lower()
         offset = (page-1) * page_size  # the offset value of what "page" we're on
         (id, text) = self.extract_id("customer", text)
 
-        select = 'vehicles.*, customers.fullname'
+        select = 'vehicles.*, customers.fullname, customers.status'
         left_join = 'customers ON customers.id = vehicles.customer_id'
 
         extra_keys = ['customers.fullname']
         keys = ['vehicles.'+key for key in self.db.get_table_info('vehicles').keys()] 
         keys += extra_keys
-        priority_keys = ['customers.fullname', 'customers.phone', 'vin', 'licence_number']
+        priority_keys = ['customers.fullname', 'licence_number', 'customers.phone', 'vin']
         search = ""
         pquery = None
         if text.strip() != "":
@@ -299,14 +318,18 @@ class SQLConnection:
     # JOB QUERIES
     def id_job(self, id):
         if id == '': return None
-        return self.db.read_row('jobs', id)
+        select = 'jobs.*, customers.status, customers.fullname'
+        lj = ['vehicles ON vehicles.id = jobs.vehicle_id', 'customers ON customers.id = vehicles.customer_id']
+        return self.db.read_row('jobs', id, select=select, left_join=lj)
     
     def search_jobs(self, text="", page=1, page_size=25, sort=None):
+        if text.strip() != '':
+            text = escape_string(text).lower()
         offset = (page-1) * page_size  # the offset value of what "page" we're on
         (v_id, text) = self.extract_id("vehicle", text)
         (c_id, text) = self.extract_id("customer", text)
 
-        select = 'jobs.*, vehicles.year, vehicles.make, vehicles.model, vehicles.vin, vehicles.licence_number'
+        select = 'jobs.*, vehicles.year, vehicles.make, vehicles.model, vehicles.vin, vehicles.licence_number, customers.status, customers.fullname, customers.id AS customer_id'
         left_join = ['vehicles ON vehicles.id = jobs.vehicle_id', 'customers ON customers.id = vehicles.customer_id']
 
         keys = ['jobs.'+key for key in self.db.get_table_info('jobs').keys()]

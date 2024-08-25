@@ -1,8 +1,8 @@
-
+STATUS_OPTIONS = ['good', 'moderate', 'poor', 'neutral']
 
 FIELD_HEADER_NAMES = {
     'customer_id': 'Customer',
-    'vehicle_id': 'Vehicle',
+    'vehicle_id': 'Customer/Vehicle',
     'fullname': 'Full Name',
     'email': 'E-Mail',
     'phone': 'Phone',
@@ -23,7 +23,8 @@ FIELD_HEADER_NAMES = {
     'parts_cost': 'Parts Cost $',
     'mileage': 'Mileage',
     'id': 'ID',
-    'work_order_number': 'Work Order #'
+    'work_order_number': 'Work Order #',
+    'status': 'Status'
 }
 
 DEFAULT_WIDTH = 80

@@ -3,6 +3,7 @@ import time
 from ..utility.sql import SQLConnection, FIELD_HEADER_NAMES
 from ..utility.config import DEFAULT_WIDTH
 from ..utility import settings
+from ..utility import utils
 from .editwindow import EditEntity
 from .clearentry import ClearableEntry
 
@@ -44,7 +45,7 @@ class SearchTemplate(tk.Frame):
         search_frame.grid(row=0, column=0, sticky='ew')
 
         # New item button
-        self.new_item_button = tk.Button(search_frame, text=f"New {self.params['name']}", command=self.edit_item)
+        self.new_item_button = tk.Button(search_frame, text=f"New {self.params['name'].lower() == 'job' and 'Work Order' or self.params['name']}", command=self.edit_item)
         self.new_item_button.pack(pady=10, padx=20, side=tk.LEFT)
 
         # Search Entry
@@ -71,13 +72,13 @@ class SearchTemplate(tk.Frame):
         self.keys = list(sql.get_table_info(self.params['dbname']).keys())
         self.keys = [x for x in self.keys if x not in exclusions]
         self.treeview['columns'] = self.keys
-        self.treeview.tag_configure('oddrow', background='#F0F0F0')
-        self.treeview.tag_configure('evenrow', background='#FFFFFF')
+        self.set_colors()
 
         self.treeview.column("#0", width=0, stretch=tk.NO)  # Hide the default treeview column
 
         stretchKeys = [x.strip() for x in settings.config['application']['stretch columns'].split(',')]
         for key in self.keys:
+            if key == 'status': continue
             self.treeview.column(key, anchor=tk.W, width=settings.config['column widths'].get(key, DEFAULT_WIDTH), stretch=key in stretchKeys and tk.YES or tk.NO)
             self.treeview.heading(key, text=FIELD_HEADER_NAMES[key])
 
@@ -112,6 +113,16 @@ class SearchTemplate(tk.Frame):
         # Load the initial page of entries
         # This now triggers when the app loads in update_resize
         #self.load_entries() 
+
+    def set_colors(self):
+        self.treeview.tag_configure('good-odd', background=settings.config['colors']['good standing'])
+        self.treeview.tag_configure('good-even', background=utils.darken_hex_color(settings.config['colors']['good standing']))
+        self.treeview.tag_configure('moderate-odd', background=settings.config['colors']['moderate standing'])
+        self.treeview.tag_configure('moderate-even', background=utils.darken_hex_color(settings.config['colors']['moderate standing']))
+        self.treeview.tag_configure('poor-odd', background=settings.config['colors']['poor standing'])
+        self.treeview.tag_configure('poor-even', background=utils.darken_hex_color(settings.config['colors']['poor standing']))
+        self.treeview.tag_configure('neutral-odd', background=settings.config['colors']['neutral standing'])
+        self.treeview.tag_configure('neutral-even', background=utils.darken_hex_color(settings.config['colors']['neutral standing']))
 
     def update_resize(self):
         height = self.winfo_height()
@@ -220,14 +231,18 @@ class SearchTemplate(tk.Frame):
         
         counter=0
         for entry in self.entries:
-            self.treeview.insert("", tk.END, values=entry.to_tuple()[1:], iid=counter, tags=(counter%2==0 and 'evenrow' or 'oddrow'))  
+            tags = ()
+            if settings.config['colors']['colorful lists'] and hasattr(entry,'status'):
+                oddeven = counter%2 == 0 and 'even' or 'odd'
+                tags = (f'{entry.status}-{oddeven}',)
+            self.treeview.insert("", tk.END, values=entry.to_tuple()[1:], iid=counter, tags=tags)  
             counter += 1
             
-    def edit_item(self, entry=None):
+    def edit_item(self, entry=None, callback=None):
         new_window = tk.Toplevel(self)
         new_window.parent = self
         new_window.title(f"{self.params['name']} Info")
-        ec = EditEntity(new_window, self.params['name'], entry, self.load_entries).pack(expand=True, fill=tk.BOTH)
+        ec = EditEntity(new_window, self.params['name'], entry, callback or self.load_entries).pack(expand=True, fill=tk.BOTH)
 
     def on_select(self, event):
         if event.y < 25:

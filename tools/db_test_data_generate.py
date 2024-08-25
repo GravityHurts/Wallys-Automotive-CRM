@@ -11,6 +11,9 @@ conn = sqlite3.connect('data/test.mechanic_app.db')
 # Create a cursor object
 cursor = conn.cursor()
 
+def fakestatus():
+    return random.choice(['good', 'moderate', 'poor', 'neutral'])
+
 # Create the 'customers' table if it does not already exist
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS customers (
@@ -22,6 +25,7 @@ cursor.execute('''
         city_address TEXT,
         state_address TEXT,
         zip_address TEXT,
+        status TEXT,
         notes TEXT
     )
 ''')
@@ -72,6 +76,7 @@ def generate_customer_data():
         fake.city(),
         fake.state(),
         fake.zipcode(),
+        fakestatus(),
         fake.text(max_nb_chars=200)
     )
 
@@ -105,8 +110,8 @@ def generate_job_data(vehicle_id):
 customer_ids = []
 for _ in range(3000):
     cursor.execute('''
-        INSERT INTO customers (fullname, email, phone, street_address, city_address, state_address, zip_address, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO customers (fullname, email, phone, street_address, city_address, state_address, zip_address, status, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', generate_customer_data())
     customer_ids.append(cursor.lastrowid)
 

@@ -1,7 +1,6 @@
 import tkinter as tk
 import app
-from app.utility import settings
-
+from app.utility import settings, utils
 
 class MainApplication(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -15,9 +14,11 @@ class MainApplication(tk.Tk):
         self.mw = app.MainWindow(self)
         self.mw.pack(fill='both', expand=True)
 
+def main_loop():
+    root = MainApplication()
+    root.mainloop()
 
 
 if __name__ == "__main__":
-    root = MainApplication()
-    root.mainloop()
+    main_loop()
 

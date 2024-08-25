@@ -14,12 +14,12 @@ class JobSearch(SearchTemplate):
             customer = self.parent.parent.customersearch
             vx = sql.id_vehicle(selected_entry.vehicle_id)
             cx = sql.id_customer(vx.customer_id)
-            customer.edit_item(cx)
+            customer.edit_item(cx, callback=self.load_entries)
 
     def show_vehicle(self):
         selected_entry = self.get_selected_item()
         if selected_entry is not None:
             vehicle = self.parent.parent.vehiclesearch
             vx = sql.id_vehicle(selected_entry.vehicle_id)
-            vehicle.edit_item(vx)
+            vehicle.edit_item(vx, callback=self.load_entries)
             

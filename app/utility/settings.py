@@ -1,8 +1,8 @@
 import configparser
-import atexit
 import re
 from datetime import datetime
 from . import config
+from . import utils
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -18,10 +18,11 @@ defaults = {
         'stretch columns': 'notes,repairs'
     },
     'colors': {
-        'linked entry': 'lightblue',
-        'good standing': 'lightgreen',
-        'moderate standing': 'lightyellow',
-        'poor standing': 'lightred'
+        'colorful lists': True,
+        'neutral standing': '#ADB9E6',
+        'good standing': '#90EE90',
+        'moderate standing': '#FFFBDB',
+        'poor standing': '#F5BEBE'
     },
     'dates': {
         'last job creation': formatted_date,
@@ -73,7 +74,7 @@ def load_ini_settings():
     
     return conf
 
-def save_settings():
+def save_settings(restart=False):
     """Save settings to an INI file."""
     cfp = configparser.ConfigParser()
     
@@ -85,9 +86,12 @@ def save_settings():
     with open(file_path, 'w') as configfile:
         cfp.write(configfile)
 
+    if restart:
+        utils.restart_script()
+
 config = validate_settings()
 
-atexit.register(save_settings)
+utils.register_exit(save_settings)
 
 # test usage
 if __name__ == "__main__":

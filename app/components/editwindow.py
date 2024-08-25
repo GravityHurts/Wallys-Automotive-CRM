@@ -2,11 +2,15 @@ import tkinter as tk
 from tkinter import messagebox
 
 from ..utility.types import Customer, Vehicle, Job
+from ..utility.config import STATUS_OPTIONS
+from ..utility import settings
 from .autocompleteentry import AutocompleteEntry
 
 from .textwithvar import TextWithVar
 
 from ..utility.sql import SQLConnection
+
+from ..components.dropdown import Dropdown
 
 sql = SQLConnection()
 
@@ -20,6 +24,14 @@ class IDSuggestEntry(AutocompleteEntry):
         search_text = self.var.get()
         results = self.search_function(search_text, 1, 8)
         return results['entries']
+    
+    def get_id_color(self):
+        if hasattr(self.selected, 'status'):
+            if self.selected.status is None:
+                return '#FFFFFF'
+            else:
+                return settings.config['colors'][f'{self.selected.status} standing']
+        return super().get_id_color()
     
 class EditEntity(tk.Frame):
     def __init__(self, parent, ctype, entity=None, update_list=None):
@@ -56,12 +68,28 @@ class EditEntity(tk.Frame):
             self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
             self.menu_bar.add_cascade(label="File", menu=self.file_menu)
             
-            self.file_menu.add_command(label=f"X Delete {self.ctype} X", command=self.delete_entity)
+            self.file_menu.add_command(label=f"X Delete {self.ctype == 'job' and 'Work Order' or self.ctype.title()} X", command=self.delete_entity)
             self.parent.config(menu=self.menu_bar)
 
         # Create widgets for each property
         row = 0
         self.property_widgets = {}
+
+        # if self.ctype == 'job':
+        #     label = tk.Label(self, text="Customer:")
+        #     #label.configure(bg=settings.config['colors'][f'{self.entity.status} standing'])
+        #     label.grid(row=row, column=0, sticky="e")
+
+        #     t = 'No Selected Customer'
+        #     s = 'neutral'
+        #     if hasattr(self.entity,'c_id_string') and hasattr(self.entity,'status'):
+        #         t = self.entity.c_id_string
+        #         s = self.entity.status
+        #     self.clabel = tk.Label(self, text=t)
+        #     self.clabel.configure(bg=settings.config['colors'][f'{s} standing'])
+        #     self.clabel.grid(row=row, column=1, sticky="w")
+            
+        #     row +=1
 
         for property_name, label_text in self.properties.items():
             if property_name.lower() == 'id' or property_name.lower() == 'work_order_number':
@@ -84,6 +112,7 @@ class EditEntity(tk.Frame):
                 label.grid(row=row, column=0, sticky="e")
 
                 entry = IDSuggestEntry(self, property_name.split('_')[0], textvariable=var)
+                # entry = IDSuggestEntry(self, property_name.split('_')[0], textvariable=var, when_selected=self.when_selected)
                 entry.grid(row=row, column=1, sticky="ew", columnspan=3) 
             elif self.new_entity and property_name.lower() == 'fullname' and self.ctype == 'customer':
                 label = tk.Label(self, text=label_text + ":")
@@ -91,6 +120,15 @@ class EditEntity(tk.Frame):
 
                 entry = IDSuggestEntry(self, 'customer', textvariable=var, allow_selection=False)
                 entry.grid(row=row, column=1, sticky="ew", columnspan=3) 
+            elif property_name.lower() == 'status':
+                label = tk.Label(self, text=label_text + ":")
+                label.grid(row=row, column=0, sticky="e")
+
+                def d(s):
+                    dd.set_color(settings.config['colors'][f'{s} standing'])
+                dd = Dropdown(self, options=STATUS_OPTIONS, default=self.entity.status, command=d)
+                dd.set_color(settings.config['colors'][f'{self.entity.status} standing'])
+                dd.grid(row=row, column=1, sticky="w")
             else:
                 label = tk.Label(self, text=label_text + ":")
                 label.grid(row=row, column=0, sticky="e")
@@ -134,6 +172,11 @@ class EditEntity(tk.Frame):
         if self.new_entity:
             first_entry = next(iter(self.property_widgets.values()))[1]
             first_entry.focus()
+
+    # def when_selected(self, selection):
+    #     if self.ctype == 'job' and hasattr(selection,'id_string') and hasattr(selection,'status'):
+    #         self.clabel.configure(bg=settings.config['colors'][f'{selection.status} standing'])
+    #         self.clabel.config(text=selection.id_string)
 
     def save_info(self):
         # Get the values from the StringVar objects and update the entity
@@ -186,7 +229,7 @@ class EditEntity(tk.Frame):
 
     def delete_entity(self):
         # Ask for confirmation before deleting
-        result = messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this Entity?", parent=self)
+        result = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete this {self.ctype == 'job' and 'Work Order' or self.ctype.title()}?", parent=self)
 
         if result:
             self.entity.delete()

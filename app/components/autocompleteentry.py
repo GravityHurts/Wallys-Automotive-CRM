@@ -4,6 +4,7 @@ from ..utility import settings
 class AutocompleteEntry(Entry):
     def __init__(self, lista, parent, *args, **kwargs):
         self.allow_selection = kwargs.pop('allow_selection', True)
+        self.when_selected = kwargs.pop('when_selected', None)
         Entry.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
@@ -23,7 +24,7 @@ class AutocompleteEntry(Entry):
         self.var.set(newVal)
         self.traceid = self.var.trace('w', self.changed)
         if self.selected is not None:
-            self.config(bg=settings.config['colors']['linked entry'])
+            self.config(bg=self.get_id_color())
 
     def changed(self, name, index, mode):
         self.selected = None
@@ -60,10 +61,12 @@ class AutocompleteEntry(Entry):
             selected = self.lista[selected]
             self.var.set(selected)
             self.selected = selected
-            self.config(bg=settings.config['colors']['linked entry'])
+            self.config(bg=self.get_id_color())
             self.lb.destroy()
             self.lb_up = False
             self.icursor(END)
+            if self.when_selected:
+                self.when_selected(selected)
 
     def up(self, event):
         if self.lb_up:
@@ -93,3 +96,6 @@ class AutocompleteEntry(Entry):
         return self.lista
 #        pattern = re.compile('.*' + self.var.get() + '.*')
 #        return [w for w in self.lista if re.match(pattern, w)]
+
+    def get_id_color(self):
+        return settings.config['colors']['neutral standing']

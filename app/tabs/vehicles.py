@@ -23,4 +23,4 @@ class VehicleSearch(SearchTemplate):
         if selected_entry is not None:
             customer = self.parent.parent.customersearch
             cx = sql.id_customer(selected_entry.customer_id)
-            customer.edit_item(cx)
+            customer.edit_item(cx, callback=self.load_entries)

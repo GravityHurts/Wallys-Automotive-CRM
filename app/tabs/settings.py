@@ -13,7 +13,7 @@ class Settings(tk.Frame):
         self.scrollFrame = ScrollFrame(self)
         
         f = tk.Frame(self.scrollFrame.viewPort)
-        save_button = tk.Button(f, text="Save", command=settings.save_settings)
+        save_button = tk.Button(f, text="Save", command=lambda: settings.save_settings(True))
         def l():
             a=0
             for x in settings.config.items():
@@ -50,7 +50,7 @@ class Settings(tk.Frame):
 
     def create_widget_for_type(self, parent, idx, key, var, value):
         if isinstance(value, bool):
-            checkbox = tk.Checkbutton(parent, text=key, variable=var)
+            checkbox = tk.Checkbutton(parent, text='', variable=var)
             label = tk.Label(parent, text=key.title())
             label.grid(row=idx + 1, column=0, sticky='w')  # Position the label next to the entry widget
             return checkbox

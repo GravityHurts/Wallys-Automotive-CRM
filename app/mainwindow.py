@@ -44,7 +44,7 @@ class MainWindow(tk.Frame):
         # Jobs tab
         self.jobsearch = JobSearch(self.notebook, line_height=line_height)
         self.jobsearch.pack(expand=True, fill='both')
-        self.notebook.add(self.jobsearch, text="Jobs")
+        self.notebook.add(self.jobsearch, text="Work Orders")
 
         # Settings tab
         self.settingstab = Settings(self.notebook)
@@ -80,6 +80,7 @@ class MainWindow(tk.Frame):
         """Handles tab changes."""
         a = self.notebook.select()
         if 'settings' not in a:
+            self.notebook.nametowidget(self.notebook.select()).load_entries()
             self.notebook.nametowidget(self.notebook.select()).search_entry.focus_set()
 
 # Create and start the main application
