@@ -14,6 +14,14 @@ from ..components.dropdown import Dropdown
 
 sql = SQLConnection()
 
+def set_window_position(window, x, y):
+    # Get the current size of the window
+    current_geometry = window.geometry().split('+')
+    width_height = current_geometry[0]  # Format is 'widthxheight'
+    
+    # Set the new position while keeping the current size
+    new_geometry = f"{width_height}+{x}+{y}"
+    window.geometry(new_geometry)
 
 class IDSuggestEntry(AutocompleteEntry):
     def __init__(self, parent, ctype, *args, **kwargs):
@@ -58,6 +66,8 @@ class EditEntity(tk.Frame):
         self.grid_columnconfigure(3, weight=1)
         self.grid_rowconfigure(5, weight=1)
         self.parent.minsize(300, 300)
+        #self.parent.iconbitmap("media/app.ico")
+        #set_window_position(self.parent, 10, 10)
 
         self.parent.protocol("WM_DELETE_WINDOW", self.close_window)
 
