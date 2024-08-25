@@ -4,6 +4,7 @@ class TextWithVar(tk.Text):
     def __init__(self, master=None, cnf={}, **kw):
         self.textvariable = kw.pop('textvariable', None)
         super().__init__(master, cnf, **kw)
+        self.config(height=10)
         if self.textvariable is not None:
             self.bind('<<Modified>>', self.on_text_change)
             self.bind('<KeyRelease>', self.on_text_change)

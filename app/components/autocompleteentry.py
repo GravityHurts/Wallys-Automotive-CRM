@@ -12,9 +12,14 @@ class AutocompleteEntry(Entry):
         self.var = kwargs["textvariable"]
 
         self.traceid = self.var.trace('w', self.changed)
-        self.bind("<Right>", self.selection)
+        #self.bind("<Right>", self.selection)
         self.bind("<Up>", self.up)
         self.bind("<Down>", self.down)
+
+        self.bind("<Tab>", self.close)
+        self.bind("<Return>", self.close)  # <Return> represents the Enter key
+        self.bind("<Escape>", self.close)
+        #self.bind("<FocusOut>", self.close)
         
         self.lb_up = False
         self.selected = None
@@ -67,6 +72,11 @@ class AutocompleteEntry(Entry):
             self.icursor(END)
             if self.when_selected:
                 self.when_selected(selected)
+
+    def close(self, event):
+        if self.lb_up:
+            self.lb.destroy()
+            self.lb_up = False
 
     def up(self, event):
         if self.lb_up:
