@@ -126,7 +126,6 @@ class Job(DBObject):
             self.id_string    = f"{self.c_id_string}: {self.year} {self.make} {self.model} - '{self.licence_number}'"
 
         if not hasattr(self, 'work_order_number') or self.work_order_number == '':
-            print("HERE")
             self.labor_cost = 0
             self.parts_cost = 0
             self.labor_hours = 0

@@ -6,8 +6,13 @@ from .config import FIELD_HEADER_NAMES
 
 DB_NAME = "data/mechanic_app.db"
 
+def sanitize_input(t):
+    # Replace any character that is not a word character (alphanumeric) or space with an empty string
+    #return re.sub(r'[^\w\s-]+', '', t)
+    return t.replace('\'', '')
+
 def escape_string(value):
-    return sqlite3.Connection(':memory:').execute('SELECT ?;', (value,)).fetchone()[0]
+    return sanitize_input(sqlite3.Connection(':memory:').execute('SELECT ?;', (value,)).fetchone()[0])
 
 @singleton
 class Database:
