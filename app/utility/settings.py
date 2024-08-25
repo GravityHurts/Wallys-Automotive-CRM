@@ -19,10 +19,10 @@ defaults = {
     },
     'colors': {
         'colorful lists': True,
-        'neutral standing': '#ADB9E6',
-        'good standing': '#90EE90',
-        'moderate standing': '#FFFBDB',
-        'poor standing': '#F5BEBE'
+        'neutral standing': '#e6e1ff',
+        'good standing': '#d5ffd7',
+        'moderate standing': '#fffdd5',
+        'poor standing': '#ffe4d5'
     },
     'dates': {
         'last job creation': formatted_date,
