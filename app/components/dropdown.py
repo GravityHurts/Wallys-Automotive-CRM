@@ -3,7 +3,7 @@ import tkinter as tk
 from ..utility import utils
 
 class Dropdown(tk.Frame):
-    def __init__(self, parent, options, default=None, command=None):
+    def __init__(self, parent, options, textvariable=None, default=None, command=None):
         """
         Initialize the dropdown component.
 
@@ -13,7 +13,10 @@ class Dropdown(tk.Frame):
         :param command: Function to call when an option is selected (optional).
         """
         super().__init__(parent)
-        self.variable = tk.StringVar(self)
+
+        if not textvariable:
+            textvariable = tk.StringVar(self)
+        self.variable = textvariable
         self.variable.set(default if default else options[0])
         
         self.dropdown = tk.OptionMenu(self, self.variable, *options, command=self._on_select)

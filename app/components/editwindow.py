@@ -126,7 +126,7 @@ class EditEntity(tk.Frame):
 
                 def d(s):
                     dd.set_color(settings.config['colors'][f'{s} standing'])
-                dd = Dropdown(self, options=STATUS_OPTIONS, default=self.entity.status, command=d)
+                dd = Dropdown(self, textvariable=var, options=STATUS_OPTIONS, default=self.entity.status, command=d)
                 dd.set_color(settings.config['colors'][f'{self.entity.status} standing'])
                 dd.grid(row=row, column=1, sticky="w")
             else:
@@ -211,7 +211,7 @@ class EditEntity(tk.Frame):
     def close_window(self):
         if self.has_changed():
             # Ask for confirmation before quitting with unsaved changes
-            result = messagebox.askyesno("Discard Changes", "You have unsaved changes. YES = Close without saving", parent=self)
+            result = messagebox.askyesno("Discard Changes", "You have unsaved changes. Close without saving?\n\nYES = Close without saving\nNO = Do not close, do not save", parent=self)
 
             if result:
                 self.close()

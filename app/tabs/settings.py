@@ -2,6 +2,7 @@ import tkinter as tk
 from ..utility import settings
 from ..components.scrollableframe import ScrollFrame
 from typing import Any
+from tkinter import colorchooser
 
 class Settings(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -61,11 +62,33 @@ class Settings(tk.Frame):
             label.grid(row=idx + 1, column=0, sticky='w')  # Position the label next to the entry widget
             return entry
         else:  # Assume it's a string
-            entry = tk.Entry(parent, width=20) 
-            entry.insert(0, str(value))
-            label = tk.Label(parent, text=key.title())
-            label.grid(row=idx + 1, column=0, sticky='w')  # Position the label next to the entry widget
-            return entry
+            if 'standing' in key:
+                entry = tk.Entry(parent, width=10) 
+                entry.insert(0, str(value))
+                entry.configure(bg=value)
+                label = tk.Label(parent, text=key.title())
+                label.grid(row=idx + 1, column=0, sticky='w')  # Position the label next to the entry widget
+
+                def choose_color():
+                    # Open the color chooser dialog
+                    color_code = colorchooser.askcolor(title="Choose a color")[1]
+                    if color_code:
+                        # Update the label with the chosen color's HEX code
+                        entry.delete(0, tk.END)
+                        entry.insert(0, color_code)
+                        entry.configure(bg=color_code)
+                        self.update_setting('colors', key, color_code)
+
+                choose_color_button = tk.Button(parent, text="Choose Color", command=choose_color)
+                choose_color_button.grid(row=idx+1, column=3)
+                
+                return entry
+            else:
+                entry = tk.Entry(parent, width=20) 
+                entry.insert(0, str(value))
+                label = tk.Label(parent, text=key.title())
+                label.grid(row=idx + 1, column=0, sticky='w')  # Position the label next to the entry widget
+                return entry
 
     def update_setting(self, section, key, value):
         settings.config[section.lower()][key.lower()] = value
