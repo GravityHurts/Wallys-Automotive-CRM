@@ -129,12 +129,14 @@ class Job(DBObject):
             self.labor_cost = 0
             self.parts_cost = 0
             self.labor_hours = 0
-            self.date_completed = datetime.now().strftime(settings.DATE_FORMAT)
+            dt = datetime.now()
+            self.date_completed = dt.strftime(settings.DATE_FORMAT)
             if settings.config['dates']['last job creation'] != self.date_completed:
                 settings.config['dates']['current index'] = '1'
-            
-            self.won = settings.config['dates']['current index']
-            self.work_order_number = f'{self.date_completed}-{self.won}'
+
+            self.won = str(settings.config['dates']['current index']).zfill(2)
+            wn = dt.strftime(settings.DATE_FORMAT_WORK_ORDER_NUMBER)
+            self.work_order_number = f'{wn}{self.won}'
 
     def save(self):
         try:

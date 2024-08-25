@@ -5,6 +5,7 @@ from . import config
 from . import utils
 
 DATE_FORMAT = '%Y-%m-%d'
+DATE_FORMAT_WORK_ORDER_NUMBER = '%y%m%d'
 
 now = datetime.now()
 formatted_date = now.strftime(DATE_FORMAT)
