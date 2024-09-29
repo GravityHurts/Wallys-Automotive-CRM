@@ -2,3 +2,4 @@ __pycache__
 mechanic_app.db
 data/
 logs/app-log.txt
+venv/
