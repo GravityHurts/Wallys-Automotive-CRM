@@ -37,7 +37,7 @@ class DBObject:
     def __init__(self, table_name, **kwargs):
         self.db = sql.Database()
         self.table_name = table_name
-        self.excludes = ['property_display', 'excludes', 'db', 'table_name']
+        self.excludes = ['property_display', 'excludes', 'db', 'table_name', 'isNew']
 
         # Fetch the schema regardless of whether kwargs are provided
         table_info = self.db.get_table_info(self.table_name)
@@ -47,18 +47,26 @@ class DBObject:
         # mark excludes for when we save to DB
         extra_keys = list(set(kwargs.keys()) - set(table_info.keys()))
 
+        self.isNew = True
+        default_value = '' #if data_type == 'TEXT' else 0
         for key, data_type in table_info.items():
             # Use the kwarg value if provided, else use a default value
-            default_value = '' #if data_type == 'TEXT' else 0
             setattr(self, key, kwargs.get(key, default_value))
+            if getattr(self, key, default_value) != default_value:
+                self.isNew = False
 
         for key in extra_keys:
-            setattr(self, key, kwargs.get(key, ''))
+            setattr(self, key, kwargs.get(key, default_value))
+            if getattr(self, key, default_value) != default_value:
+                self.isNew = False
         
         self.excludes += extra_keys
 
     def to_tuple(self):
         return tuple(self.get_value(key) for key in vars(self) if key not in self.excludes)
+    
+    def checkNew(self):
+        return self.isNew
         
     def get_value(self, key):
         if key.endswith('_id'):
@@ -129,14 +137,6 @@ class Job(DBObject):
             self.labor_cost = 0
             self.parts_cost = 0
             self.labor_hours = 0
-            dt = datetime.now()
-            self.date_completed = dt.strftime(settings.DATE_FORMAT)
-            if settings.config['dates']['last job creation'] != self.date_completed:
-                settings.config['dates']['current index'] = '1'
-
-            self.won = str(settings.config['dates']['current index']).zfill(2)
-            wn = dt.strftime(settings.DATE_FORMAT_WORK_ORDER_NUMBER)
-            self.work_order_number = f'{wn}{self.won}'
 
     def save(self):
         try:
@@ -155,8 +155,42 @@ class Job(DBObject):
             raise ValueError(f"Error: {self.property_display['parts_cost']} is not a number")
             
         super().save()
-        if hasattr(self, 'won') and self.won is not None:
-            settings.config['dates']['current index'] = str(int(settings.config['dates']['current index'])+1)
+
+    def generateWON(self, dt=None):
+        if self.work_order_number is not None and self.work_order_number != '':
+            return
+
+        if (type(dt) == str):
+            dt = datetime.strptime(dt, settings.DATE_FORMAT).date()
+        
+        datenow = datetime.now()
+        if dt is None:
+            dt = datenow
+        
+        dtf = dt.strftime(settings.DATE_FORMAT)
+        dnf = datenow.strftime(settings.DATE_FORMAT)
+
+        # validate work order index
+        if (dtf == dnf): # if it's today's date
+            if settings.config['internal_dates']['last job creation'] != dnf:
+                settings.config['internal_dates']['last job creation'] = dnf
+                settings.config['internal_dates']['current index'] = '1'
+            
+            self.won = str(settings.config['internal_dates']['current index']).zfill(2)
+            settings.config['internal_dates']['current index'] = str(int(settings.config['internal_dates']['current index'])+1)
+        else: # it's not today, we need to check for past indices
+            self.won = str(self.db.get_next_job_index(dt)).zfill(2)
+
+        wn = dt.strftime(settings.DATE_FORMAT_WORK_ORDER_NUMBER)
+        self.work_order_number = f'{wn}{self.won}'
+
+        lcd = self.date_completed
+        if lcd is None or lcd == '':
+            lcd = datetime.now().strftime(settings.DATE_FORMAT)
+
+        settings.config['internal_dates']['use last work order date'] = dtf
+        settings.config['internal_dates']['use last completed date'] = lcd
+
 
             
 

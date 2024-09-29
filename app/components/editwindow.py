@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from datetime import datetime
 
 from ..utility.types import Customer, Vehicle, Job
 from ..utility.config import STATUS_OPTIONS
@@ -11,6 +12,8 @@ from .textwithvar import TextWithVar
 from ..utility.sql import SQLConnection
 
 from ..components.dropdown import Dropdown
+
+from ..components.cal import DateEntryWithInlineCalendar
 
 sql = SQLConnection()
 
@@ -102,8 +105,8 @@ class EditEntity(tk.Frame):
         #     row +=1
 
         for property_name, label_text in self.properties.items():
-            if property_name.lower() == 'id' or property_name.lower() == 'work_order_number':
-                continue
+            if property_name.lower() == 'id':
+                continue  
 
             var = tk.StringVar()
 
@@ -139,12 +142,23 @@ class EditEntity(tk.Frame):
                 dd = Dropdown(self, textvariable=var, options=STATUS_OPTIONS, default=self.entity.status, command=d)
                 dd.set_color(settings.config['colors'][f'{self.entity.status} standing'])
                 dd.grid(row=row, column=1, sticky="w")
+            elif property_name.lower() == 'date_completed':
+                label = tk.Label(self, text=label_text + ":")
+                label.grid(row=row, column=0, sticky="e")
+
+                entry = DateEntryWithInlineCalendar(self, textvariable=var)
+                entry.grid(row=row, column=1, sticky="ew", columnspan=3)
+                entry.set_date(datetime.now())
             else:
+                colspan = 3
+                if (property_name.lower() == 'work_order_number'): 
+                    colspan = 1
+
                 label = tk.Label(self, text=label_text + ":")
                 label.grid(row=row, column=0, sticky="e")
 
                 entry = tk.Entry(self, textvariable=var)
-                entry.grid(row=row, column=1, sticky="ew", columnspan=3)
+                entry.grid(row=row, column=1, sticky="ew", columnspan=colspan)
 
             self.property_widgets[property_name] = (var, entry)
             if not self.new_entity:
@@ -200,10 +214,13 @@ class EditEntity(tk.Frame):
                 else:
                     setattr(self.entity, property_name, '')
             else:
-                setattr(self.entity, property_name, var.get())
+                if property_name.lower() == 'work_order_number' and hasattr(self, 'wonentry'):
+                    self.entity.generateWON(self.wonentry.get_date())
+                else:
+                    setattr(self.entity, property_name, var.get())
         try:
             self.entity.save()
-            self.close_window()
+            self.close_window(True)
         except ValueError as e:
             messagebox.showerror("Invalid Format", f"One of the properties is not in the expected format:\n{e}", parent=self)
             self.focus()
@@ -218,8 +235,8 @@ class EditEntity(tk.Frame):
                 return True  # has changed
         return False  # everything matches
 
-    def close_window(self):
-        if self.has_changed():
+    def close_window(self, force=False):
+        if not force and self.has_changed():
             # Ask for confirmation before quitting with unsaved changes
             result = messagebox.askyesno("Discard Changes", "You have unsaved changes. Close without saving?\n\nYES = Close without saving\nNO = Do not close, do not save", parent=self)
 
@@ -243,7 +260,7 @@ class EditEntity(tk.Frame):
 
         if result:
             self.entity.delete()
-            self.close_window()
+            self.close_window(True)
         else:
             # User canceled deletion
             self.focus()
@@ -261,10 +278,44 @@ class EditEntity(tk.Frame):
             else:
                 var.set(getattr(self.entity, property_name))
 
+            if property_name.lower() == 'date_completed' and self.entity.checkNew(): 
+                ldc = datetime.now().strftime(settings.DATE_FORMAT)
+                if settings.config['new work orders']['use last completed date']:
+                    ldc = settings.config['internal_dates']['last date completed']
+
+                widget.set_date(ldc)
+                self.entity.date_completed = ldc
+                def ecb(date):
+                    settings.config['internal_dates']['last date completed'] = date
+
+                widget.set_callback(ecb)
+
+            if property_name.lower() == 'work_order_number':# and not self.entity.checkNew():
+                widget.config(state='disabled')
+
+            if property_name.lower() == 'work_order_number' and self.entity.checkNew():
+                #widget.grid_forget()
+                label = tk.Label(self, text="Work Order start date: ")
+                label.grid(row=1, column=2, sticky="e", padx=10)
+
+                lds = datetime.now().strftime(settings.DATE_FORMAT)
+                if settings.config['new work orders']['use last work order date']:
+                    lds = settings.config['internal_dates']['last date selected']
+
+                self.wonentry = DateEntryWithInlineCalendar(self, initial_date=lds, noclear=True)
+                self.wonentry.grid(row=1, column=3, sticky="w")
+                def ecb(date):
+                    settings.config['internal_dates']['last date selected'] = date
+
+                self.wonentry.set_callback(ecb)
+
             if property_name.lower() == 'notes':
                 widget.update_textvariable()
         
         if hasattr(self.entity, 'work_order_number'):
-            self.parent.title(f'Work Order {getattr(self.entity, "work_order_number")}')
+            if self.entity.checkNew():
+                self.parent.title(f'Work Order')
+            else:
+                self.parent.title(f'Work Order {getattr(self.entity, "work_order_number")}')
         
 

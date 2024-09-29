@@ -18,6 +18,10 @@ defaults = {
         'start fullscreen': True,
         'stretch columns': 'notes,repairs'
     },
+    'new work orders': {
+        'use last completed date': False,
+        'use last work order date': False
+    },
     'colors': {
         'colorful lists': True,
         'neutral standing': '#e6e1ff',
@@ -25,8 +29,10 @@ defaults = {
         'moderate standing': '#fffdd5',
         'poor standing': '#ffe4d5'
     },
-    'dates': {
+    'internal_dates': {
         'last job creation': formatted_date,
+        'last date selected': formatted_date,
+        'last date completed': formatted_date,
         'current index': '1'
     },
     'column widths': config.DEFAULT_FIELD_HEADER_WIDTHS

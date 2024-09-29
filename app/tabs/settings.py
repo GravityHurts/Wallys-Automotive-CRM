@@ -22,8 +22,11 @@ class Settings(tk.Frame):
             return a*80
         save_button.pack(side='right', padx=10, pady=(0,l()))
         for section, items in settings.config.items():  # Iterate over sections and their contents
+            if not section.lower() in ['application', 'colors', 'new work orders']:
+                continue
+
             frame = tk.Frame(f)
-            frame.pack()
+            frame.pack(anchor='w')
             section_title = tk.Label(frame, text=section.title(), font=("Helvetica", 12, "bold"))
             section_title.grid(row=0, column=0, sticky='w')
             for idx, (key, value) in enumerate(items.items()):  # Iterate over keys and values within each section

@@ -3,6 +3,9 @@ import re
 from app.utility.types import Customer, Vehicle, Job
 from .utils import singleton
 from .config import FIELD_HEADER_NAMES
+from . import settings
+
+from datetime import datetime
 
 DB_NAME = "data/mechanic_app.db"
 
@@ -53,6 +56,27 @@ class Database:
     def get_table_info(self, table_name):
         self.cursor.execute(f"PRAGMA table_info({table_name})")
         return {column[1]: column[2] for column in self.cursor.fetchall()}  # map column names to data types
+    
+    def execute_get_one(self, query):
+        self.cursor.execute(query)
+        return self.cursor.fetchone()
+    
+    def get_next_job_index(self, date):
+        d = date.strftime(settings.DATE_FORMAT_WORK_ORDER_NUMBER)
+        t = f'''
+SELECT MAX(CAST(SUBSTR(work_order_number, 7) AS INTEGER)) AS highest_postfix
+FROM jobs
+WHERE SUBSTR(work_order_number, 1, 6) = '{d}';
+'''
+        a = self.execute_get_one(t)
+        a = a[0]
+        if a is None or a == 'None':
+            a = 1
+        else:
+            a = a+1
+            
+        print(a)
+        return a
 
     def create_row(self, table_name, keys_values):
         keys_values = {key: value for key, value in keys_values.items() if key != 'id'}
